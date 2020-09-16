@@ -3,7 +3,7 @@
 #include "cstdlib"
 #include "vector"
 #include "../common.h"
-#include "FullCuckoo.h"
+#include "Cuckoo/cuckoo.h"
 
 #define MAX_TABLE_NUM 5
 
@@ -24,7 +24,7 @@ class MyDesign{
 			for (int i=0;i<_TABLE_NUM;++i)
 				table[i]=BuildByConfig(configure[i]);
 		*/	
-		table[0]=new FullCuckoo()<Key,Value,;
+		table[0]=new cuckoo()<Key,Value>;
 		table[1]=new MultiLudo();
 		table[2]=new SingleLudo();
 	}
