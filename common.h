@@ -41,8 +41,3 @@
 #define ERROR 2
 #define EXISTS 3
 #define OTHERS 4
-
-void Output(uint32_t STATUS,string s)
-{
-    fprintf(stderr,s); puts("");
-}
