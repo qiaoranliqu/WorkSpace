@@ -1,18 +1,20 @@
 #pragma once
 
 #include "cstdlib"
-#include "vector"
 #include "../common.h"
+#include "Cuckoo/common.h"
 #include "Cuckoo/cuckoo.h"
 
 #define MAX_TABLE_NUM 5
+#define DEFAULT_SIZE 16384
 
-template<class Key, class Value, uint8_t VL = sizeof(Value) * 8, uint8_t DL = 0>
+template<class Key, class Value>
 class MyDesign{
+	public:
 	uint32_t TABLE_NUM=3;
 	uint32_t STATUS;
 	Base* table[MAX_TABLE_NUM];
-	MultiLudo(/*uint32_t _TABLE_NUM,vector<Config> configure*/)
+	explicit MyDesign(/*uint32_t _TABLE_NUM,vector<Config> configure*/)
 	{
 		/*
 		    **TODO:Make configuration flexible
@@ -24,73 +26,98 @@ class MyDesign{
 			for (int i=0;i<_TABLE_NUM;++i)
 				table[i]=BuildByConfig(configure[i]);
 		*/	
-		table[0]=new cuckoo()<Key,Value>;
-		table[1]=new MultiLudo();
-		table[2]=new SingleLudo();
+		table[0]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
+		table[1]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
+//		table[1]=new MultiLudo();
+		table[2]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
+//		table[2]=new SingleLudo();
 	}
-	~MultiLudo()
+	uint32_t insert(const Key& Cur_Key,const Value& Cur_Val)
 	{
-		for (int i=0;i<TABLE_NUM;++i) delete table[i];
-	}
-	uint32_t insert(Key& Cur_Key,Value& Cur_Val)
-	{
-		int My_ID=0;
-		while (My_ID<TABLE_NUM&&(STATUS=table[My_ID].insert(Cur_Key,Cur_Val))!=OK)
+		STATUS=table[0].insert(Cur_Key,Cur_Val);
+		if (STATUS==OK) return OK;
+		int Cur_Table=1;
+		while (STATUS==FULL&&Cur_Table<TABLE_NUM)
 		{
-			switch STATUS{
-				case FULL:
-					++My_ID;
-					if (My_ID==TABLE_NUM) break;
-					table[My_ID+1].Merge(table[My_ID].toMap());
-					break;
-				case EXISTS:
-					Output(1,"K-V already exists in table "+toString(My_ID));
-					break;
-				default:
-					Output(1,"Unknown Errors");
-				}
+			STATUS=table[Cur_Table].Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
+			if (STATUS==OK) break;
+			if (STATUS==FULL)
+			{
+				++Cur_Table;
+				continue;
+			}
+			Counter::count("Cuckoo Error in merge for layer "+to_string(Cur_Table));
+			return ERROR;
 		}
-		return STATUS;
+		if (Cur_Table==TABLE_NUM)
+		{
+			Counter::count("Cuckoo Error all layers are full");
+			return ERROR;
+		}
+		table[0].insert(Cur_Key,Cur_Val);
+		return OK;
 	}
 	uint32_t erase(Key& Cur_Key)
 	{
-		int My_ID=0;
-		while (My_ID<TABLE_NUM&&(STATUS=table[My_ID].erase(Cur_Key))!=OK)
+		STATUS=table[0].erase(Cur_Key,Cur_Val);
+		if (STATUS==OK) return OK;
+		int Cur_Table=1;
+		while (STATUS==FULL&&Cur_Table<TABLE_NUM)
 		{
-			switch STATUS{
-				case FULL:
-					++My_ID;
-					if (My_ID==TABLE_NUM) break;
-					table[My_ID+1].Merge(table[My_ID].toMap());
-					break;
-				case EXISTS:
-					Output(1,"K-V already exists in table "+toString(My_ID));
-					break;
-				default:
-					Output(1,"Unknown Errors");
-				}
+			STATUS=table[Cur_Table].Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
+			if (STATUS==OK) break;
+			if (STATUS==FULL)
+			{
+				++Cur_Table;
+				continue;
+			}
+			Counter::count("Cuckoo Error in merge for layer "+to_string(Cur_Table));
+			return ERROR;
 		}
-		return STATUS;
+		if (Cur_Table==TABLE_NUM)
+		{
+			Counter::count("Cuckoo Error all layers are full");
+			return ERROR;
+		}
+		table[0].erase(Cur_Key,Cur_Val);
+		return OK;		
 	}
-	uint32_t modify(Key& Cur_Key,Value& Cur_Val)
+	uint32_t modify(const Key& Cur_Key,const Value& Cur_Val)
 	{
-		int My_ID=0;
-		while (My_ID<TABLE_NUM&&(STATUS=table[My_ID].modify(Cur_Key,Cur_Val))!=OK)
+		STATUS=table[0].modify(Cur_Key,Cur_Val);
+		if (STATUS==OK) return OK;
+		int Cur_Table=1;
+		while (STATUS==FULL&&Cur_Table<TABLE_NUM)
 		{
-			switch STATUS{
-				case FULL:
-					++My_ID;
-					if (My_ID==TABLE_NUM) break;
-					table[My_ID+1].Merge(table[My_ID].toMap());
-					break;
-				case EXISTS:
-					Output(1,"K-V already exists in table "+toString(My_ID));
-					break;
-				default:
-					Output(1,"Unknown Errors");
-				}
+			STATUS=table[Cur_Table].Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
+			if (STATUS==OK) break;
+			if (STATUS==FULL)
+			{
+				++Cur_Table;
+				continue;
+			}
+			Counter::count("Cuckoo Error in merge for layer "+to_string(Cur_Table));
+			return ERROR;
 		}
-		return STATUS;		
+		if (Cur_Table==TABLE_NUM)
+		{
+			Counter::count("Cuckoo Error all layers are full");
+			return ERROR;
+		}
+		table[0].modify(Cur_Key,Cur_Val);
+		return OK;	
+	}
+	Value lookup(const Key& Cur_Key)
+	{
+		int i;
+		Value Cur_Value; bool Cur_del=false;
+		for (i=0;i<TABLE_NUM;++i)
+			if (table[i].lookup(Cur_Key,Cur_Value,Cur_Del)) break;
+		if (Cur_Del==true) 
+			Counter::count("Cuckoo Error the key is deleted");
+		if (i==TABLE_NUM)
+			Counter::count("Cuckoo Error never find the key");
+		return Cur_Value;
 	}
 };
 	

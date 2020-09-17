@@ -40,40 +40,18 @@
 // a good cuckoo path with less data movement (see
 // http://www.cs.cmu.edu/~dga/papers/cuckoo-eurosys14.pdf )
 
-template<class Key, class Value, class Match, char digestLength, int kCandidateBuckets, int kSlotsPerBucket>
-class DataPlaneCuckooMap;
-
-template<class K, class Match, bool l2, char digestLength>
-class TwoLevelCuckooRouter;
-
-template<class K, bool l2, class Match>
-class BloomFilterControlPlane;
-
 struct CuckooMove {
   uint32_t bsrc, bdst;
   uint8_t ssrc, sdst;
 };
 
-template<class Key, class Value, class Match = uint8_t, bool maintainCollisionSet = true, char digestLength = -1, int kCandidateBuckets = 2, int kSlotsPerBucket = 4>
-class ControlPlaneCuckooMap {
+template<class Key, class Value,int RatDown=100,int RatScan=100, int kCandidateBuckets = 2, int kSlotsPerBucket = 4>
+class CuckooMap {
 public:
-  static const char DL = digestLength > 0 ? digestLength : sizeof(Match) * 8;
-  static const Match MASK = (1 << DL) - 1;
-  
-  friend class DataPlaneCuckooMap<Key, Value, Match, DL, kCandidateBuckets, kSlotsPerBucket>;
-  
-  friend class TwoLevelCuckooRouter<Key, Match, true, DL>;
-  
-  friend class TwoLevelCuckooRouter<Key, Match, false, DL>;
-  
-  template<class K, class V, class M, bool E, char D, int B, int S> friend
-  class ControlPlaneCuckooMap;
-  
-  template<class K, bool G, class M, char D, bool T> friend
-  class TwoLevelCuckooControlPlane;
-  
-  template<class K, bool G, class M> friend
-  class BloomFilterControlPlane;
+
+  double rtd, rts;
+
+  bool scanned;
   
   // Utility function to compute (x * y) >> 64, or "multiply high".
   // On x86-64, this is a single instruction, but not all platforms
@@ -93,14 +71,13 @@ public:
   
   // The key type is fixed as a pre-hashed key for this specialized use.
   explicit ControlPlaneCuckooMap(uint32_t num_entries = 64) {
+    rtd = RatDown / 100.;
+    rts = RatScan / 100.;
+    scanned = false;
     Clear(num_entries);
     for (auto &hash : h) {
       hash.setSeed(rand());
     }
-  }
-
-  inline const Match getDigest(const Key &k) const {
-    return h[kCandidateBuckets](k);
   }
   
   inline int EntryCount() const {
@@ -116,13 +93,11 @@ public:
     // of having same-bucket hashes is large.  We compromise for those
     // uses by having a larger static starting size.
     num_buckets_ += 32;
+    num_slot_ = (uint32_t) num_buckets_ * kSlotsPerBucket * rts;
+    num_down_ = (uint32_t) num_buckets_ * kSlotsPerBucket * rtd;
     Bucket empty_bucket;
     buckets_.clear();
     buckets_.resize(num_buckets_, empty_bucket);
-    
-    if (maintainCollisionSet) {
-      collisionSets.resize(num_buckets_);
-    }
   }
   
   pair<int, int> locate(const Key &k) const {
@@ -142,113 +117,75 @@ public:
   
   // Returns collided key if some key collides with the key being inserted;
   // returns null if the table is full; returns &k if inserted successfully.
-  template<bool rememberPath = false>
-  const Key *insert(const Key &k, const Value &v, vector<CuckooMove> *const path = 0) {
+  const int insert(const Key &k, const Value &v,const int &isdel = 0) {
     // Merged find and duplicate checking.
     uint32_t target_bucket;
-    int target_slot = -1;
+    int target_slot = -1;     
     entryCount++;
     
-    if (maintainCollisionSet) {
-      for (int i = 0; i < kCandidateBuckets; ++i) {
-        uint32_t bucket = fast_map_to_buckets(h[i](k));
-        vector<Key> &set = collisionSets[bucket];
-        for (const Key &key : set) {
-          if ((getDigest(key) & MASK) == (getDigest(k) & MASK)) {
-            Counter::count("Cuckoo collision");
-            return &key;         // Collisions are not allowed.
-          }
-        }
-      }
-    }
-    
-    for (int i = 0; i < kCandidateBuckets && (target_slot == -1); ++i) {
+    for (int i = 0; i < kCandidateBuckets ; ++i) {
       uint32_t bucket = fast_map_to_buckets(h[i](k));
       Bucket *bptr = &buckets_[bucket];
       for (int slot = 0; slot < kSlotsPerBucket; slot++) {
-        if (bptr->occupiedMask & (1ULL << slot)) {
-          #ifdef FULL_DEBUG
-          if (k == bptr->keys[slot]) { // Duplicates are not allowed.
-            entryCount--;
-            return &bptr->keys[slot];
+        if ((bptr->occupiedMask & (1ULL << slot))) {
+          if (bptr->keys[slot]==k)
+          {
+            if (bptr->deletionMask & (1ULL << slot))
+            {
+              target_bucket = bucket;
+              target_slot = slot;             
+            }
+            else
+            {
+              Counter::count("Cuckoo collision");
+              return EXISTS;
+            }
           }
-          #endif
         } else if (target_slot == -1) {
           target_bucket = bucket;
-          target_slot = slot; // do not break, to go through full duplication test
-          
-          #ifndef FULL_DEBUG
-          break;
-          #endif
+          target_slot = slot; 
         }
       }
     }
     
     if (target_slot != -1) {
       Counter::count("Cuckoo direct insert");
-      InsertInternal(k, v, target_bucket, target_slot);
-      if (rememberPath && path)
-        path->push_back({target_bucket, target_bucket, uint8_t(target_slot), uint8_t(target_slot)});
-      return &k;
+      InsertInternal(k, v, isdel, target_bucket, target_slot);
+      return OK;
     }
     
     // No space, perform cuckooInsert
     Counter::count("Cuckoo cuckoo insert");
     
-    if (CuckooInsert<rememberPath>(k, v, path)) {
-      return &k;
-    } else {
+    if (CuckooInsert(k, v, isdel)) return OK;
+     else {
       Counter::count("Cuckoo insert fail");
       entryCount--;
-      return nullptr;
+      return FULL;
     }
   }
   
-  inline bool remove(const Key &k, bool delCollision = true) {
+  inline bool erase(const Key &k) {
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t bucket = fast_map_to_buckets(h[i](k));
-      if (RemoveInBucket(k, bucket)) {
-        entryCount--;
-        if (maintainCollisionSet && delCollision) deleteCollision(k);
-        return true;
-      }
+      if (RemoveInBucket(k, bucket)) return true;
     }
-    
-    return false;
-  }
-  
-  inline void PreventCollision(const Key &k) {
-    insertCollision(k);
-  }
-  
-  inline vector<const Key *> FindAllCollisions(const Key &k) const {
-    if (!maintainCollisionSet) return {};
-    
-    vector<const Key *> results(2);
-    
-    for (int i = 0; i < kCandidateBuckets; ++i) {
-      uint32_t bucket = fast_map_to_buckets(h[i](k));
-      const vector<Key> &set = collisionSets[bucket];
-      for (const Key &key : set) {
-        if ((getDigest(key) & MASK) == (getDigest(k) & MASK)) {
-          results[i] = &key;
-        }
-      }
-    }
-    return results;
+    Counter::count("Cuckoo uncertain deletion");
+    insert(k, 0, 1);
+    return true;
   }
   
   // Returns true if found.  Sets *out = value.
-  inline bool lookUp(const Key &k, Value &out) const {
+  inline bool lookup(const Key &k, Value &out,bool & isdel) const {
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t bucket = fast_map_to_buckets(h[i](k));
-      if (FindInBucket(k, bucket, out)) return true;
+      if (FindInBucket(k, bucket, out,isdel)) return true;
     }
     
     return false;
   }
   
-  inline void updateMapping(const Key &k, Value v) {
+  inline bool updateMapping(const Key &k, Value v) {
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t b = fast_map_to_buckets(h[i](k));
   
@@ -256,95 +193,46 @@ public:
       for (int i = 0; i < kSlotsPerBucket; i++) {
         if ((bref.occupiedMask & (1U << i)) && (bref.keys[i] == k)) {
           bref.values[i] = v;
-          return;
+          bref.deletionMask &= ~(1U << i);
+          return true;
         }
       }
     }
+    Counter:count("Cuckoo uncertain updating");
+    insert(k, v, 0);
   }
 
-//  /// compose two maps in place
-//  void Compose(unordered_map<Value, Value> &migrate) {
-//    for (auto &bucket : buckets_) {
-//      for (int slot = 0; slot < kSlotsPerBucket; ++slot) {
-//        if (bucket.occupiedMask & (1ULL << slot)) {
-//          Value &value = bucket.values[slot];
-//          auto it = migrate.find(value);
-//          if (it != migrate.end()) {
-//            Value dst = it->second;
-//            if (dst == Value(-1)) bucket.occupiedMask &= ~(1ULL << slot);
-//            else bucket.values[slot] = it->second;
-//          }
-//
-////          checkIntegrity();
-//        }
-//      }
-//    }
-//  }
-  
-  template<class NV>
-  ControlPlaneCuckooMap<Key, NV, Match, maintainCollisionSet, DL, kCandidateBuckets, kSlotsPerBucket>
-  Compose(unordered_map<Value, NV> &migrate) {
-    ControlPlaneCuckooMap<Key, NV, Match, maintainCollisionSet, DL, kCandidateBuckets, kSlotsPerBucket> other;
-    
-    other.entryCount = entryCount;
-    other.cpq_.reset();
-    other.num_buckets_ = num_buckets_;
-    other.buckets_.resize(buckets_.size());
-    
-    for (int i = 0; i < buckets_.size(); ++i) {
-      auto &bsrc = buckets_[i];
-      auto &bdst = other.buckets_[i];
-      bdst.occupiedMask = bsrc.occupiedMask;
-      
-      for (int slot = 0; slot < kSlotsPerBucket; ++slot) {
-        if (!(bsrc.occupiedMask & (1 << slot))) continue;
-        
-        bdst.keys[slot] = bsrc.keys[slot];
-        
-        Value &value = bsrc.values[slot];
-        auto it = migrate.find(value);
-        if (it != migrate.end()) {
-          bdst.values[slot] = it->second;
-          other.template setDigest<maintainCollisionSet>(i, slot, getDigest(bsrc.keys[slot]));
-          
-          insertCollision(bdst.keys[slot]);
-        } else {
-          bdst.occupiedMask &= ~(1ULL << slot);
-        }
-      }
-    }
-    
-    for (int i = 0; i < kCandidateBuckets + 1; ++i) {
-      other.h[i] = h[i];
-    }
-    
-    return other;
+  uint32_t Merge(unordered_map<Key,pair<Value,bool>,Hasher32<Key> >& other)
+  {
+        return ERROR;
   }
   
-  void SelfCompose(unordered_map<Value, Value> &migrate) {
-    for (int i = 0; i < buckets_.size(); ++i) {
-      auto &bsrc = buckets_[i];
-      
-      for (int slot = 0; slot < kSlotsPerBucket; ++slot) {
-        if (!(bsrc.occupiedMask & (1 << slot))) continue;
-        
-        Value &value = bsrc.values[slot];
-        auto it = migrate.find(value);
-        if (it != migrate.end()) {
-          bsrc.values[slot] = it->second;
-        }
-      }
-    }
-  }
-  
-  unordered_map<Key, Value, Hasher32<Key>> toMap() const {
-    unordered_map<Key, Value, Hasher32<Key>> map;
-    
+  unordered_map<Key, Value, Hasher32<Key> > toMap() const {
+    unordered_map<Key, Value, Hasher32<Key> > map;
+    scanned = false;
+    uint32_t ElementCounter=0;
     for (auto &bucket: buckets_) {  // all buckets
-      for (int slot = 0; slot < kSlotsPerBucket; ++slot) {
-        if (bucket.occupiedMask & (1ULL << slot))
-          map.insert(make_pair(bucket.keys[slot], bucket.values[slot]));
-      }
+      if (ElementCounter>=num_down_) break;
+      for (int slot = 0; slot < kSlotsPerBucket; ++slot) 
+        if ((bucket.occupiedMask & (1ULL << slot)) && !(bucket.clockalgMask & (1ULL << slot)))
+        {
+          map.insert(make_pair(bucket.keys[slot], make_pair(bucket.values[slot],(bucket.deletionMask >> i) & 1)));
+          bucket.occupiedMask ^= (1ULL << slot);
+          ++ElementCounter;
+          if (ElementCounter>=num_down_) break;
+        }
+    }
+    for (auto &bucket: buckets_) {  // all buckets
+      if (ElementCounter>=num_down_) break;
+      for (int slot = 0; slot < kSlotsPerBucket; ++slot) 
+        if ((bucket.occupiedMask & (1ULL << slot)))
+        {
+          map.insert(make_pair(bucket.keys[slot], make_pair(bucket.values[slot],(bucket.deletionMask >> i) & 1)));
+          bucket.occupiedMask ^= (1ULL << slot);
+          bucket.clockalgMask ^= (1ULL << slot);
+          ++ElementCounter;
+          if (ElementCounter>=num_down_) break;
+        }
     }
     
     return map;
@@ -403,45 +291,13 @@ public:
   static constexpr int kMaxQueueSize = calMaxQueueSize();
   static constexpr int kVisitedListSize = calVisitedListSize();
   
-  // Buckets are organized with key_types clustered for access speed
-  // and for compactness while remaining aligned.
-  template<bool E, typename Dummy = void>
-  class base_class;
-  
-  template<bool E>
-  class base_class<E, typename std::enable_if<E>::type> {
-  public:
-    Match digests[kSlotsPerBucket];
-  };
-  
-  template<bool E>
-  class base_class<E, typename std::enable_if<!E>::type> {
-  };
-  
-  struct Bucket : public base_class<maintainCollisionSet> {
+  struct Bucket {
   public:
     uint8_t occupiedMask = 0;
+    uint8_t deletionMask = 0;
     Key keys[kSlotsPerBucket];
     Value values[kSlotsPerBucket];
   };
-  
-  template<bool E>
-  inline typename std::enable_if<E, void>::type setDigest(int bid, int slot, Match digest) {
-    buckets_[bid].digests[slot] = digest & MASK;
-  }
-  
-  template<bool E>
-  inline typename std::enable_if<!E, void>::type setDigest(int bid, int slot, Match digest) {
-  }
-  
-  template<bool E>
-  inline typename std::enable_if<E, void>::type setDigest(Bucket &bdst, int sdst, const Bucket &bsrc, int ssrc) {
-    bdst.digests[sdst] = bsrc.digests[ssrc == -1 ? sdst : ssrc] & MASK;
-  }
-  
-  template<bool E>
-  inline typename std::enable_if<!E, void>::type setDigest(Bucket &bdst, int slot, const Bucket &bsrc, int ssrc) {
-  }
   
   int entryCount = 0;
   // Insert uses the BFS optimization (search before moving) to reduce
@@ -493,57 +349,24 @@ public:
     int tail_;
   };
   
-  typedef std::array<CuckooPathEntry, kMaxBFSPathLen> CuckooPath;
-  
-  inline void deleteCollision(const Key k) {   // don't add reference operator
-    if (!maintainCollisionSet) return;
-    
-    for (int i = 0; i < kCandidateBuckets; ++i) {
-      uint32_t bucket = fast_map_to_buckets(h[i](k));
-      
-      for (auto it = collisionSets[bucket].begin(); it != collisionSets[bucket].end(); ++it) {
-        if (*it == k) {
-          collisionSets[bucket].erase(it);
-          break;
+  inline void ClearAllBits()
+  {
+        scanned = true;
+        for (int i = 0; i < num_buckets_; ++i)
+        {
+          buckets[i].deletionMask = 0;
         }
-      }
-    }
   }
   
-  inline void insertCollision(const Key &k) {
-    if (!maintainCollisionSet) return;
-    
-    for (int i = 0; i < kCandidateBuckets; ++i) {
-      uint32_t bucket = fast_map_to_buckets(h[i](k));
-      collisionSets[bucket].push_back(k);
-    }
-  }
-  
-  inline void InsertInternal(const Key &k, const Value &v, uint32_t b, int slot) {
+  inline void InsertInternal(const Key &k, const Value &v,const bool &isdel uint32_t b, int slot) {
     Bucket &bptr = buckets_[b];
     bptr.keys[slot] = k;
     bptr.values[slot] = v;
-    
-    setDigest<maintainCollisionSet>(b, slot, getDigest(k));
-    
     bptr.occupiedMask |= 1U << slot;
-    
-    if (maintainCollisionSet) insertCollision(k);
-    
-    // checkIntegrity();
+    bptr.deletionMask = bpter.deletionMask & (~(1U << slot)) | (isdel << slot); 
+    bptr.clockalgMask |= (!isdel) << slot;
+    if (!scanned && entryCount > num_scan_) ClearAllBits();
   }
-
-//  void checkIntegrity() {
-//    for (auto &bucket: buckets_) {  // all buckets
-//      for (int slot = 0; slot < 4; ++slot) {
-//        if (bucket.occupiedMask & (1ULL << slot)) {
-//          const Key &key = bucket.keys[slot];
-//          const uint16_t host = bucket.values[slot];
-//          assert(host < 60000);
-//        }
-//      }
-//    }
-//  }
   
   // For the associative cuckoo table, check all of the slots in
   // the bucket to see if the key is present.
@@ -551,9 +374,10 @@ public:
     Bucket &bref = buckets_[b];
     for (int i = 0; i < kSlotsPerBucket; i++) {
       if ((bref.occupiedMask & (1U << i)) && bref.keys[i] == k) {
-        bref.occupiedMask ^= 1U << i;
-
-//        checkIntegrity();
+        if (bref.deletionMask & (1U << i))
+        Counter::count("Cuckoo is already deleted");
+        bref.deletionMask |= (1U << i);
+        bref.clockalgMask &= ~(1U << i);
         return true;
       }
     }
@@ -562,11 +386,13 @@ public:
   
   // For the associative cuckoo table, check all of the slots in
   // the bucket to see if the key is present.
-  inline bool FindInBucket(const Key &k, uint32_t b, Value &out) const {
+  inline bool FindInBucket(const Key &k, uint32_t b, Value &out,bool & isdel) const {
     const Bucket &bref = buckets_[b];
     for (int i = 0; i < kSlotsPerBucket; i++) {
       if ((bref.occupiedMask & (1U << i)) && (bref.keys[i] == k)) {
         out = bref.values[i];
+        isdel = (bref.deletionMask >> i) & 1;
+        bref.clockalgMask |= (1U << i);
         return true;
       }
     }
@@ -591,15 +417,12 @@ public:
     Bucket &dst_ref = buckets_[dst_bucket];
     dst_ref.keys[dst_slot] = src_ref.keys[src_slot];
     dst_ref.values[dst_slot] = src_ref.values[src_slot];
-    
-    setDigest<maintainCollisionSet>(dst_ref, dst_slot, src_ref, src_slot);
-
-//    checkIntegrity();
+    (dst_ref.deletionMask &= ~(1U << dst_slot)) |= ((src_ref.deletionMask >> src_slot) & 1) << dst_slot; 
+    (dst_ref.clockalgMask &= ~(1U << dst_slot)) |= ((src_ref.clockalgMask >> src_slot) & 1) << dst_slot; 
   }
   
-  template<bool rememberPath = false>
   /// @return cuckoo path if rememberPath is true. or {1} to indicate success and {} to indicate fail.
-  bool CuckooInsert(const Key &k, const Value &v, vector<CuckooMove> *const path) {
+  bool CuckooInsert(const Key &k, const Value &v, const bool &isdel) {
     int visited_end = -1;
     cpq_.reset();
     
@@ -614,24 +437,16 @@ public:
       if (free_slot != -1) {
         // found a free slot in this path. just insert and follow this path
         buckets_[entry.bucket].occupiedMask |= 1U << free_slot;
-        while (entry.depth > 1) {
+        while (entry.depth > 1) { 
           // "copy" instead of "swap" because one entry is always zero.
           // After, write target key/value over top of last copied entry.
           CuckooPathEntry parent = visited_[entry.parent];
           CopyItem(parent.bucket, entry.parent_slot, entry.bucket, free_slot);
-          
-          if (rememberPath && path) {
-            path->push_back({parent.bucket, entry.bucket, uint8_t(entry.parent_slot), uint8_t(free_slot)});
-          }
-          
           free_slot = entry.parent_slot;
           entry = parent;
         }
         
-        InsertInternal(k, v, entry.bucket, free_slot);
-        if (rememberPath && path) {
-          path->push_back({entry.bucket, entry.bucket, uint8_t(free_slot), uint8_t(free_slot)});
-        }
+        InsertInternal(k, v, isdel, entry.bucket, free_slot);
         
         return true;
       } else if (entry.depth < kMaxBFSPathLen) {
@@ -659,10 +474,9 @@ public:
   }
   
   // Set upon initialization: num_entries / kLoadFactor / kSlotsPerBucket.
-  uint32_t num_buckets_;
+  uint32_t num_buckets_, num_slot_, num_down_;
   std::vector<Bucket> buckets_;
   
   CuckooPathQueue cpq_;
   CuckooPathEntry visited_[kVisitedListSize];
-  std::vector<std::vector<Key>> collisionSets;
 };
