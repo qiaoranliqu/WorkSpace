@@ -117,7 +117,7 @@ public:
   
   // Returns collided key if some key collides with the key being inserted;
   // returns null if the table is full; returns &k if inserted successfully.
-  const int insert(const Key &k, const Value &v,const int &isdel = 0) {
+  const int insert(const Key &k, const Value &v) {
     // Merged find and duplicate checking.
     uint32_t target_bucket;
     int target_slot = -1;     
@@ -130,7 +130,7 @@ public:
         if ((bptr->occupiedMask & (1ULL << slot))) {
           if (bptr->keys[slot]==k)
           {
-            if (bptr->deletionMask & (1ULL << slot))
+            if (bptr->values[slot]==-1)
             {
               target_bucket = bucket;
               target_slot = slot;             
@@ -150,14 +150,14 @@ public:
     
     if (target_slot != -1) {
       Counter::count("Cuckoo direct insert");
-      InsertInternal(k, v, isdel, target_bucket, target_slot);
+      InsertInternal(k, v, target_bucket, target_slot);
       return OK;
     }
     
     // No space, perform cuckooInsert
     Counter::count("Cuckoo cuckoo insert");
     
-    if (CuckooInsert(k, v, isdel)) return OK;
+    if (CuckooInsert(k, v)) return OK;
      else {
       Counter::count("Cuckoo insert fail");
       entryCount--;
@@ -171,15 +171,15 @@ public:
       if (RemoveInBucket(k, bucket)) return true;
     }
     Counter::count("Cuckoo uncertain deletion");
-    insert(k, 0, 1);
+    insert(k, -1);
     return true;
   }
   
   // Returns true if found.  Sets *out = value.
-  inline bool lookup(const Key &k, Value &out,bool & isdel) const {
+  inline bool lookup(const Key &k, Value &out) const {
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t bucket = fast_map_to_buckets(h[i](k));
-      if (FindInBucket(k, bucket, out,isdel)) return true;
+      if (FindInBucket(k, bucket, out)) return true;
     }
     
     return false;
@@ -193,7 +193,6 @@ public:
       for (int i = 0; i < kSlotsPerBucket; i++) {
         if ((bref.occupiedMask & (1U << i)) && (bref.keys[i] == k)) {
           bref.values[i] = v;
-          bref.deletionMask &= ~(1U << i);
           return true;
         }
       }
@@ -216,7 +215,7 @@ public:
       for (int slot = 0; slot < kSlotsPerBucket; ++slot) 
         if ((bucket.occupiedMask & (1ULL << slot)) && !(bucket.clockalgMask & (1ULL << slot)))
         {
-          map.insert(make_pair(bucket.keys[slot], make_pair(bucket.values[slot],(bucket.deletionMask >> i) & 1)));
+          map.insert(make_pair(bucket.keys[slot], bucket.values[slot]));
           bucket.occupiedMask ^= (1ULL << slot);
           ++ElementCounter;
           if (ElementCounter>=num_down_) break;
@@ -227,7 +226,7 @@ public:
       for (int slot = 0; slot < kSlotsPerBucket; ++slot) 
         if ((bucket.occupiedMask & (1ULL << slot)))
         {
-          map.insert(make_pair(bucket.keys[slot], make_pair(bucket.values[slot],(bucket.deletionMask >> i) & 1)));
+          map.insert(make_pair(bucket.keys[slot], bucket.values[slot]));
           bucket.occupiedMask ^= (1ULL << slot);
           bucket.clockalgMask ^= (1ULL << slot);
           ++ElementCounter;
@@ -294,7 +293,6 @@ public:
   struct Bucket {
   public:
     uint8_t occupiedMask = 0;
-    uint8_t deletionMask = 0;
     Key keys[kSlotsPerBucket];
     Value values[kSlotsPerBucket];
   };
@@ -352,20 +350,16 @@ public:
   inline void ClearAllBits()
   {
         scanned = true;
-        for (int i = 0; i < num_buckets_; ++i)
-        {
-          buckets[i].deletionMask = 0;
-        }
+        for (auto &bucket: buckets_) bucket.clockalgMask = 0;
   }
   
-  inline void InsertInternal(const Key &k, const Value &v,const bool &isdel uint32_t b, int slot) {
+  inline void InsertInternal(const Key &k, const Value &v,uint32_t b, int slot) {
     Bucket &bptr = buckets_[b];
     bptr.keys[slot] = k;
     bptr.values[slot] = v;
     bptr.occupiedMask |= 1U << slot;
-    bptr.deletionMask = bpter.deletionMask & (~(1U << slot)) | (isdel << slot); 
-    bptr.clockalgMask |= (!isdel) << slot;
-    if (!scanned && entryCount > num_scan_) ClearAllBits();
+    bptr.clockalgMask |= (v!=-1) << slot;
+    if (!scanned && entryCount >= num_scan_) ClearAllBits();
   }
   
   // For the associative cuckoo table, check all of the slots in
@@ -374,9 +368,9 @@ public:
     Bucket &bref = buckets_[b];
     for (int i = 0; i < kSlotsPerBucket; i++) {
       if ((bref.occupiedMask & (1U << i)) && bref.keys[i] == k) {
-        if (bref.deletionMask & (1U << i))
-        Counter::count("Cuckoo is already deleted");
-        bref.deletionMask |= (1U << i);
+        if (bref.values[i]==-1)
+        Counter::count("Cuckoo Error element is already deleted");
+        bref.values[i]=-1;
         bref.clockalgMask &= ~(1U << i);
         return true;
       }
@@ -386,12 +380,11 @@ public:
   
   // For the associative cuckoo table, check all of the slots in
   // the bucket to see if the key is present.
-  inline bool FindInBucket(const Key &k, uint32_t b, Value &out,bool & isdel) const {
+  inline bool FindInBucket(const Key &k, uint32_t b, Value &out) const {
     const Bucket &bref = buckets_[b];
     for (int i = 0; i < kSlotsPerBucket; i++) {
       if ((bref.occupiedMask & (1U << i)) && (bref.keys[i] == k)) {
         out = bref.values[i];
-        isdel = (bref.deletionMask >> i) & 1;
         bref.clockalgMask |= (1U << i);
         return true;
       }
@@ -417,12 +410,11 @@ public:
     Bucket &dst_ref = buckets_[dst_bucket];
     dst_ref.keys[dst_slot] = src_ref.keys[src_slot];
     dst_ref.values[dst_slot] = src_ref.values[src_slot];
-    (dst_ref.deletionMask &= ~(1U << dst_slot)) |= ((src_ref.deletionMask >> src_slot) & 1) << dst_slot; 
     (dst_ref.clockalgMask &= ~(1U << dst_slot)) |= ((src_ref.clockalgMask >> src_slot) & 1) << dst_slot; 
   }
   
   /// @return cuckoo path if rememberPath is true. or {1} to indicate success and {} to indicate fail.
-  bool CuckooInsert(const Key &k, const Value &v, const bool &isdel) {
+  bool CuckooInsert(const Key &k, const Value &v) {
     int visited_end = -1;
     cpq_.reset();
     
@@ -446,7 +438,7 @@ public:
           entry = parent;
         }
         
-        InsertInternal(k, v, isdel, entry.bucket, free_slot);
+        InsertInternal(k, v, entry.bucket, free_slot);
         
         return true;
       } else if (entry.depth < kMaxBFSPathLen) {
