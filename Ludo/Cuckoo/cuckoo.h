@@ -70,7 +70,7 @@ public:
   }
   
   // The key type is fixed as a pre-hashed key for this specialized use.
-  explicit ControlPlaneCuckooMap(uint32_t num_entries = 64) {
+  explicit CuckooMap(uint32_t num_entries = 64) {
     rtd = RatDown / 100.;
     rts = RatScan / 100.;
     scanned = false;
