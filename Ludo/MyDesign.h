@@ -52,7 +52,7 @@ class MyDesign{
 		while (LogBufferOffset+(klen-kOffset)>=4096)
 		{
 			int toWrite=4096-LogBufferOffset;
-			memcpy(LogBuff+logBufferOffset,k+kOffset,toWrite);
+			memcpy(LogBuff+LogBufferOffset,k+kOffset,toWrite);
 			LogBufferOffset=0;
 			kOffset+=toWrite;
 			logFileOffset+=4096;
