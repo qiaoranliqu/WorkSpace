@@ -81,7 +81,7 @@ class MyDesign{
 		int Cur_Table=1;
 		while (STATUS==FULL&&Cur_Table<TABLE_NUM)
 		{
-			STATUS=table[Cur_Table]->Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
+			STATUS=table[Cur_Table]->Merge(table[Cur_Table-1]->toMap());//for all layer>0,the table should return full if it can't add any element.
 			if (STATUS==OK) break;
 			if (STATUS==FULL)
 			{
@@ -107,7 +107,7 @@ class MyDesign{
 		int Cur_Table=1;
 		while (STATUS==FULL&&Cur_Table<TABLE_NUM)
 		{
-			STATUS=table[Cur_Table]->Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
+			STATUS=table[Cur_Table]->Merge(table[Cur_Table-1]->toMap());//for all layer>0,the table should return full if it can't add any element.
 			if (STATUS==OK) break;
 			if (STATUS==FULL)
 			{
@@ -133,7 +133,7 @@ class MyDesign{
 		int Cur_Table=1;
 		while (STATUS==FULL&&Cur_Table<TABLE_NUM)
 		{
-			STATUS=table[Cur_Table]->Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
+			STATUS=table[Cur_Table]->Merge(table[Cur_Table-1]->toMap());//for all layer>0,the table should return full if it can't add any element.
 			if (STATUS==OK) break;
 			if (STATUS==FULL)
 			{

@@ -293,6 +293,7 @@ public:
   struct Bucket {
   public:
     uint8_t occupiedMask = 0;
+    uint8_t clockalgMask = 0;
     Key keys[kSlotsPerBucket];
     Value values[kSlotsPerBucket];
   };
