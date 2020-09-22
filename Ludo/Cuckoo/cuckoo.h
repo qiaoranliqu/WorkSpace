@@ -382,7 +382,7 @@ public:
   // For the associative cuckoo table, check all of the slots in
   // the bucket to see if the key is present.
   inline bool FindInBucket(const Key &k, uint32_t b, Value &out) const {
-    const Bucket &bref = buckets_[b];
+    Bucket &bref = buckets_[b];
     for (int i = 0; i < kSlotsPerBucket; i++) {
       if ((bref.occupiedMask & (1U << i)) && (bref.keys[i] == k)) {
         out = bref.values[i];
