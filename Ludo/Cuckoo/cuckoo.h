@@ -197,7 +197,7 @@ public:
         }
       }
     }
-    Counter:count("Cuckoo uncertain updating");
+    Counter::count("Cuckoo uncertain updating");
     insert(k, v, 0);
   }
 
@@ -359,7 +359,7 @@ public:
     bptr.values[slot] = v;
     bptr.occupiedMask |= 1U << slot;
     bptr.clockalgMask |= (v!=-1) << slot;
-    if (!scanned && entryCount >= num_scan_) ClearAllBits();
+    if (!scanned && entryCount >= num_slot_) ClearAllBits();
   }
   
   // For the associative cuckoo table, check all of the slots in

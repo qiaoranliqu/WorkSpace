@@ -17,7 +17,7 @@ class MyDesign{
 	uint32_t TABLE_NUM=3;
 	uint32_t STATUS;
 	uint32_t fd;
-	Base* table[MAX_TABLE_NUM];
+	Base<Key,Value>* table[MAX_TABLE_NUM];
 	const string LogFile="MyDesign.log";
 	char* LogBuf[MAX_BUFF_SIZE];
 	char* TempBuf[MAX_BUFF_SIZE];
