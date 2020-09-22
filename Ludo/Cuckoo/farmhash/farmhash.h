@@ -49,7 +49,11 @@
 #include <string.h>   // for memcpy and memset
 #include <utility>
 
-namespace farmhash {
+#ifndef NAMESPACE_FOR_HASH_FUNCTIONS
+#define NAMESPACE_FOR_HASH_FUNCTIONS farmhash
+#endif
+
+namespace NAMESPACE_FOR_HASH_FUNCTIONS {
 
 #if defined(FARMHASH_UINT128_T_DEFINED)
 #if defined(__clang__)
