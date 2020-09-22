@@ -5,6 +5,7 @@
 
 template<class Key, class Value>
 class Base{
+    public:
     Base(){}
     ~Base(){}
     virtual int insert(const Key &k,const Value &v)=0;
