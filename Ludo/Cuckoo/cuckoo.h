@@ -176,7 +176,7 @@ public:
   }
   
   // Returns true if found.  Sets *out = value.
-  inline int lookup(const Key &k,Value& out) const {
+  inline int lookup(const Key &k,Value &out) {
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t bucket = fast_map_to_buckets(h[i](k));
       if (FindInBucket(k, bucket, out)) return true;
@@ -206,7 +206,7 @@ public:
         return ERROR;
   }
   
-  unordered_map<Key, Value, Hasher32<Key> > toMap() const {
+  unordered_map<Key, Value, Hasher32<Key> > toMap() {
     unordered_map<Key, Value, Hasher32<Key> > map;
     scanned = false;
     uint32_t ElementCounter=0;

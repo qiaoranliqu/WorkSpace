@@ -76,12 +76,12 @@ class MyDesign{
 	uint32_t insert(const Key& Cur_Key,const Value& Cur_Val)
 	{
 		Insert_Log("i",Cur_Key,Cur_Val);
-		STATUS=table[0].insert(Cur_Key,Cur_Val);
+		STATUS=table[0]->insert(Cur_Key,Cur_Val);
 		if (STATUS==OK) return OK;
 		int Cur_Table=1;
 		while (STATUS==FULL&&Cur_Table<TABLE_NUM)
 		{
-			STATUS=table[Cur_Table].Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
+			STATUS=table[Cur_Table]->Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
 			if (STATUS==OK) break;
 			if (STATUS==FULL)
 			{
@@ -96,18 +96,18 @@ class MyDesign{
 			Counter::count("Cuckoo Error all layers are full");
 			return ERROR;
 		}
-		table[0].insert(Cur_Key,Cur_Val);
+		table[0]->insert(Cur_Key,Cur_Val);
 		return OK;
 	}
 	uint32_t erase(Key& Cur_Key)
 	{
 		Insert_Log("e",Cur_Key,0);
-		STATUS=table[0].erase(Cur_Key);
+		STATUS=table[0]->erase(Cur_Key);
 		if (STATUS==OK) return OK;
 		int Cur_Table=1;
 		while (STATUS==FULL&&Cur_Table<TABLE_NUM)
 		{
-			STATUS=table[Cur_Table].Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
+			STATUS=table[Cur_Table]->Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
 			if (STATUS==OK) break;
 			if (STATUS==FULL)
 			{
@@ -122,18 +122,18 @@ class MyDesign{
 			Counter::count("Cuckoo Error all layers are full");
 			return ERROR;
 		}
-		table[0].erase(Cur_Key);
+		table[0]->erase(Cur_Key);
 		return OK;		
 	}
 	uint32_t modify(const Key& Cur_Key,const Value& Cur_Val)
 	{
 		Insert_Log("m",Cur_Key,Cur_Val);
-		STATUS=table[0].modify(Cur_Key,Cur_Val);
+		STATUS=table[0]->modify(Cur_Key,Cur_Val);
 		if (STATUS==OK) return OK;
 		int Cur_Table=1;
 		while (STATUS==FULL&&Cur_Table<TABLE_NUM)
 		{
-			STATUS=table[Cur_Table].Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
+			STATUS=table[Cur_Table]->Merge(table[Cur_Table-1].toMap());//for all layer>0,the table should return full if it can't add any element.
 			if (STATUS==OK) break;
 			if (STATUS==FULL)
 			{
@@ -148,7 +148,7 @@ class MyDesign{
 			Counter::count("Cuckoo Error all layers are full");
 			return ERROR;
 		}
-		table[0].modify(Cur_Key,Cur_Val);
+		table[0]->modify(Cur_Key,Cur_Val);
 		return OK;	
 	}
 	Value lookup(const Key& Cur_Key)
@@ -157,7 +157,7 @@ class MyDesign{
 		int i;
 		Value Cur_Value;
 		for (i=0;i<TABLE_NUM;++i)
-			if (table[i].lookup(Cur_Key,Cur_Value)) break;
+			if (table[i]->lookup(Cur_Key,Cur_Value)) break;
 		if (Cur_Value==-1) 
 			Counter::count("Cuckoo Error the key is deleted");
 		if (i==TABLE_NUM)
