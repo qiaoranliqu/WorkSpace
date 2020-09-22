@@ -2,7 +2,6 @@
 
 #include <cstdlib>
 #include <unistd.h>
-#include "Cuckoo/farmhash/farmhash.h"
 #include "../common.h"
 #include "Cuckoo/common.h"
 #include "Cuckoo/cuckoo.h"
