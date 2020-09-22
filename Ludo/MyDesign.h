@@ -22,8 +22,8 @@ class MyDesign{
 	uint32_t fd;
 	Base<Key,Value>* table[MAX_TABLE_NUM];
 	const string LogFile="MyDesign.log";
-	char* LogBuf[MAX_BUFF_SIZE];
-	char* TempBuf[MAX_BUFF_SIZE];
+	char LogBuff[MAX_BUFF_SIZE];
+	char TempBuff[MAX_BUFF_SIZE];
 	explicit MyDesign(/*uint32_t _TABLE_NUM,vector<Config> configure*/)
 	{
 		/*
@@ -40,22 +40,22 @@ class MyDesign{
 		table[1]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
 //		table[1]=new MultiLudo();
 		table[2]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
-		fd=open(LogFile,O_RDWR | O_APPEND | O_CREAT);
+		fd=open(LogFile.c_str(),O_RDWR | O_APPEND | O_CREAT);
 		fsync(fd);
 		close(fd);
 //		table[2]=new SingleLudo();
 	}
-	int LogBufferOffset=0,logFileOffset=0;
+	int LogBufferOffset=0,logFileOffset=0,logFileOffset=0;
 	void appendLog(char* k,int klen)
 	{
-		int kOffset=0,fd=open(LogFile,O_RDWR | O_APPEND | O_CREAT);
+		int kOffset=0,fd=open(LogFile.cstr(),O_RDWR | O_APPEND | O_CREAT);
 		while (LogBufferOffset+(klen-kOffset)>=4096)
 		{
 			int toWrite=4096-LogBufferOffset;
-			memcpy(logBuffer+logBufferOffset,k+kOffset,toWrite);
-			LogBuffOffset=0;
+			memcpy(logBuff+logBufferOffset,k+kOffset,toWrite);
+			LogBufferOffset=0;
 			kOffset+=toWrite;
-			LogFileOffset+=4096;
+			logFileOffset+=4096;
 		}
 		if (logFileOffset > logFileSize)
 		{
@@ -63,7 +63,7 @@ class MyDesign{
 			 return;
 		}
 		int toWrite=klen-kOffset;
-		memcpy(logBuffer+logBufferOffset,k+kOffset,toWrite);
+		memcpy(logBuff+LogBufferOffset,k+kOffset,toWrite);
 		LogBuffOffset=0;
 		kOffset+=toWrite;
 		LogFileOffset+=4096;
