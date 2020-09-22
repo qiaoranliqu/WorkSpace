@@ -49,9 +49,7 @@
 #include <string.h>   // for memcpy and memset
 #include <utility>
 
-#ifndef NAMESPACE_FOR_HASH_FUNCTIONS
 #define NAMESPACE_FOR_HASH_FUNCTIONS farmhash
-#endif
 
 namespace NAMESPACE_FOR_HASH_FUNCTIONS {
 
