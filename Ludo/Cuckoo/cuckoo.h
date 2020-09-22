@@ -46,7 +46,7 @@ struct CuckooMove {
 };
 
 template<class Key, class Value,int RatDown=100,int RatScan=100, int kCandidateBuckets = 2, int kSlotsPerBucket = 4>
-class CuckooMap :public Base{
+class CuckooMap :public Base<Key,Value>{
 public:
 
   double rtd, rts;
