@@ -5,6 +5,9 @@
 #include "../common.h"
 #include "Cuckoo/common.h"
 #include "Cuckoo/cuckoo.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define MAX_TABLE_NUM 5
 #define MAX_BUFF_SIZE 4096
@@ -33,10 +36,10 @@ class MyDesign{
 			for (int i=0;i<_TABLE_NUM;++i)
 				table[i]=BuildByConfig(configure[i]);
 		*/	
-		table[0]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
-		table[1]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
+		table[0]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
+		table[1]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
 //		table[1]=new MultiLudo();
-		table[2]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
+		table[2]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
 		fd=open(LogFile,O_RDWR | O_APPEND | O_CREAT);
 		fsync(fd);
 		close(fd);
