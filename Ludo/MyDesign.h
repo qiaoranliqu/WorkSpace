@@ -9,6 +9,7 @@
 #define MAX_TABLE_NUM 5
 #define MAX_BUFF_SIZE 4096
 #define DEFAULT_SIZE 16384
+#define logFileSize 2147483647
 
 template<class Key, class Value>
 class MyDesign{
@@ -38,11 +39,39 @@ class MyDesign{
 		table[2]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
 		fd=open(LogFile,O_RDWR | O_APPEND | O_CREAT);
 		fsync(fd);
+		close(fd);
 //		table[2]=new SingleLudo();
+	}
+	int LogBufferOffset=0,logFileOffset=0;
+	void appendLog(char* k,int klen)
+	{
+		int kOffset=0,fd=open(LogFile,O_RDWR | O_APPEND | O_CREAT);
+		while (LogBufferOffset+(klen-kOffset)>=4096)
+		{
+			int toWrite=4096-LogBufferOffset;
+			memcpy(logBuffer+logBufferOffset,k+kOffset,toWrite);
+			LogBuffOffset=0;
+			kOffset+=toWrite;
+			LogFileOffset+=4096;
+		}
+		if (logFileOffset > logFileSize)
+		{
+			 Counter::count("Desgin fail logFile is too large");
+			 return;
+		}
+		int toWrite=klen-kOffset;
+		memcpy(logBuffer+logBufferOffset,k+kOffset,toWrite);
+		LogBuffOffset=0;
+		kOffset+=toWrite;
+		LogFileOffset+=4096;
 	}
 	void Insert_Log(string Cur_Type,const Key &Cur_Key,const Value &Cur_Value)
 	{
-			strncpy(TempBuff,Cur_Type);
+			int tmplength=0;
+			strncpy(TempBuff,Cur_Type,Cur_Type.length()); tmplength+=Cur_Type.length();
+			strncpy(TempBuff+tmplength,(char*)&Cur_Key,sizeof(Key)); tmplength+=sizeof(Key);
+			strncpy(TempBuff+tmplength,(char*)&Cur_Value,sizeof(Value)); tmplength+=sizeof(Value);
+			appendLog(TempBuff,tmplength);
 	}
 	uint32_t insert(const Key& Cur_Key,const Value& Cur_Val)
 	{
