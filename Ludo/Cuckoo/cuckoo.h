@@ -117,7 +117,7 @@ public:
   
   // Returns collided key if some key collides with the key being inserted;
   // returns null if the table is full; returns &k if inserted successfully.
-  const int insert(const Key &k, const Value &v) {
+    int insert(const Key &k, const Value &v) {
     // Merged find and duplicate checking.
     uint32_t target_bucket;
     int target_slot = -1;     
@@ -165,7 +165,7 @@ public:
     }
   }
   
-  inline bool erase(const Key &k) {
+  inline int erase(const Key &k) {
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t bucket = fast_map_to_buckets(h[i](k));
       if (RemoveInBucket(k, bucket)) return true;
@@ -176,7 +176,7 @@ public:
   }
   
   // Returns true if found.  Sets *out = value.
-  inline bool lookup(const Key &k, Value &out) const {
+  inline int lookup(const Key &k, Value &out) const {
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t bucket = fast_map_to_buckets(h[i](k));
       if (FindInBucket(k, bucket, out)) return true;
@@ -185,7 +185,7 @@ public:
     return false;
   }
   
-  inline bool updateMapping(const Key &k, Value v) {
+  inline int modify(const Key &k, Value v) {
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t b = fast_map_to_buckets(h[i](k));
   
@@ -198,10 +198,10 @@ public:
       }
     }
     Counter::count("Cuckoo uncertain updating");
-    insert(k, v, 0);
+    insert(k, v);
   }
 
-  uint32_t Merge(unordered_map<Key,pair<Value,bool>,Hasher32<Key> >& other)
+  int Merge(unordered_map<Key,Value,Hasher32<Key> >& other)
   {
         return ERROR;
   }
