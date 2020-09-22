@@ -40,7 +40,7 @@ class MyDesign{
 		table[1]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
 //		table[1]=new MultiLudo();
 		table[2]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
-		fd=open(LogFile.c_str(),O_RDWR | O_APPEND | O_CREAT);
+		fd=open(LogFile.c_str(),O_RDWR | O_APPEND | O_CREAT,0777);
 		fsync(fd);
 		close(fd);
 //		table[2]=new SingleLudo();
@@ -48,7 +48,7 @@ class MyDesign{
 	int LogBufferOffset=0,logFileOffset=0;
 	void appendLog(char* k,int klen)
 	{
-		int kOffset=0,fd=open(LogFile.c_str(),O_RDWR | O_APPEND | O_CREAT);
+		int kOffset=0,fd=open(LogFile.c_str(),O_RDWR | O_APPEND | O_CREAT,0777);
 		while (LogBufferOffset+(klen-kOffset)>=4096)
 		{
 			int toWrite=4096-LogBufferOffset;
