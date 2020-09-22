@@ -176,7 +176,7 @@ public:
   }
   
   // Returns true if found.  Sets *out = value.
-  inline int lookup(const Key &k, Value &out) const {
+  inline int lookup(const Key &k,Value& out) const {
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t bucket = fast_map_to_buckets(h[i](k));
       if (FindInBucket(k, bucket, out)) return true;
@@ -185,7 +185,7 @@ public:
     return false;
   }
   
-  inline int modify(const Key &k, Value v) {
+  inline int modify(const Key &k, const Value& v) {
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t b = fast_map_to_buckets(h[i](k));
   
@@ -201,7 +201,7 @@ public:
     insert(k, v);
   }
 
-  int Merge(unordered_map<Key,Value,Hasher32<Key> >& other)
+  int Merge(const unordered_map<Key,Value,Hasher32<Key> >& other)
   {
         return ERROR;
   }
