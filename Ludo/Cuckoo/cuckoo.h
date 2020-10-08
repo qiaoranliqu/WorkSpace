@@ -16,7 +16,7 @@
 #pragma once
 
 #include "hash.h"
-#include "common.h"
+#include "../common.h"
 #include "../Base.h"
 #include "../../common.h"
 
