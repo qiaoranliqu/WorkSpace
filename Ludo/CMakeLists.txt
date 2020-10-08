@@ -64,7 +64,7 @@ set(HEADER_FILES
         Cuckoo/utils/debugbreak.h
         )
 
-add_executable(test
+add_executable(testCuckoo
         ${HEADER_FILES}
         ${COMMON_SOURCE_FILES}
         testCuckoo.cpp)
@@ -78,9 +78,7 @@ IF (APPLE)
 ELSE ()
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
-    target_link_libraries(validity Threads::Threads)
-    target_link_libraries(microbenchmarks Threads::Threads)
-    target_link_libraries(sideExperiments Threads::Threads)
+    target_link_libraries(testCuckoo Threads::Threads)
 ENDIF ()
 
 
