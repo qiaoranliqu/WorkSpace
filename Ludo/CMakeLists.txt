@@ -47,6 +47,7 @@ set(COMMON_SOURCE_FILES
         Cuckoo/farmhash/farmhash.cc
         Cuckoo/utils/ClientSock.cpp
         Cuckoo/utils/hashutil.cc
+        input/input_types.cpp
         )
 
 set(HEADER_FILES
@@ -62,6 +63,7 @@ set(HEADER_FILES
         Cuckoo/utils/ClientSock.h
         Cuckoo/utils/json.hpp
         Cuckoo/utils/debugbreak.h
+        input/input_types.h
         )
 
 add_executable(testCuckoo
