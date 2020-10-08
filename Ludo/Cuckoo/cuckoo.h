@@ -171,8 +171,7 @@ public:
       if (RemoveInBucket(k, bucket)) return true;
     }
     Counter::count("Cuckoo uncertain deletion");
-    insert(k, -1);
-    return true;
+    return insert(k, -1);
   }
   
   // Returns true if found.  Sets *out = value.
@@ -198,7 +197,7 @@ public:
       }
     }
     Counter::count("Cuckoo uncertain updating");
-    insert(k, v);
+    return insert(k, v);
   }
 
   int Merge(const unordered_map<Key,Value,Hasher32<Key> >& other)
