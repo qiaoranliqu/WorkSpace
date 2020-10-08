@@ -43,12 +43,12 @@
 #include <list>
 #include <forward_list>
 
-#include "disjointset.h"
-#include "hash.h"
-#include "lfsr64.h"
-#include "utils/debugbreak.h"
-#include "utils/json.hpp"
-#include "utils/hashutil.h"
+#include "Cuckoo/disjointset.h"
+#include "Cuckoo/hash.h"
+#include "Cuckoo/lfsr64.h"
+#include "Cuckoo/utils/debugbreak.h"
+#include "Cuckoo/utils/json.hpp"
+#include "Cuckoo/utils/hashutil.h"
 
 using json = nlohmann::json;
 

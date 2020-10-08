@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <unistd.h>
 #include "../common.h"
-#include "Cuckoo/common.h"
+#include "common.h"
 #include "Cuckoo/cuckoo.h"
 #include <sys/types.h>
 #include <sys/stat.h>
