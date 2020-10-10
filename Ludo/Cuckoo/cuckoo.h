@@ -119,6 +119,8 @@ public:
   // returns null if the table is full; returns &k if inserted successfully.
     int insert(const Key &k, const Value &v) {
     // Merged find and duplicate checking.
+//    printf("current insert %d %d\n",k,v);
+//    printf("%d\n",buckets_[170].occupiedMask);
     uint32_t target_bucket;
     int target_slot = -1;     
     entryCount++;
@@ -138,6 +140,7 @@ public:
             else
             {
               Counter::count("Cuckoo collision");
+//              printf("collision!");
               return EXISTS;
             }
           }
@@ -150,7 +153,10 @@ public:
     
     if (target_slot != -1) {
       Counter::count("Cuckoo direct insert");
+//      printf("%d %d\n",target_bucket,target_slot);
       InsertInternal(k, v, target_bucket, target_slot);
+//      printf("%d\n",buckets_[target_bucket].keys[target_slot]);
+//    printf("%d %d\n",target_bucket,buckets_[target_bucket].occupiedMask);
       return OK;
     }
     
@@ -166,9 +172,10 @@ public:
   }
   
   inline int erase(const Key &k) {
+//	printf("current deletion %d\n",k);
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t bucket = fast_map_to_buckets(h[i](k));
-      if (RemoveInBucket(k, bucket)) return true;
+      if (RemoveInBucket(k, bucket)) return OK;
     }
     Counter::count("Cuckoo uncertain deletion");
     return insert(k, -1);
@@ -176,6 +183,8 @@ public:
   
   // Returns true if found.  Sets *out = value.
   inline int lookup(const Key &k,Value &out) {
+//	 printf("current lookup %d\n",k);
+//      printf("%d\n",buckets_[170].occupiedMask);
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t bucket = fast_map_to_buckets(h[i](k));
       if (FindInBucket(k, bucket, out)) return true;
@@ -185,14 +194,16 @@ public:
   }
   
   inline int modify(const Key &k, const Value& v) {
+//	 printf("current modify %d %d\n",k,v);
+//   printf("%d\n",buckets_[170].occupiedMask);
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t b = fast_map_to_buckets(h[i](k));
-  
       Bucket &bref = buckets_[b];
+//      printf("%d\n",bref.occupiedMask);
       for (int i = 0; i < kSlotsPerBucket; i++) {
         if ((bref.occupiedMask & (1U << i)) && (bref.keys[i] == k)) {
           bref.values[i] = v;
-          return true;
+          return OK;
         }
       }
     }
@@ -415,6 +426,7 @@ public:
   
   /// @return cuckoo path if rememberPath is true. or {1} to indicate success and {} to indicate fail.
   bool CuckooInsert(const Key &k, const Value &v) {
+    fprintf(stderr,"Cuckoo Insert!\n");
     int visited_end = -1;
     cpq_.reset();
     

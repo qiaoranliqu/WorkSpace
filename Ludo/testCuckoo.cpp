@@ -6,12 +6,25 @@
 
 using namespace std;
 
+int key,val,ty;
+
 int main()
 {
     MyDesign<int32_t,int32_t> rng;
-    for (int i=0;i<5;++i) rng.insert(i,i);
-    for (int i=0;i<5;++i) rng.lookup(i);
-    for (int i=0;i<5;++i) rng.modify(i,i+1);
-    for (int i=0;i<5;++i) rng.erase(i);
-    for (int i=0;i<5;++i) rng.lookup(i);
+    freopen("data.in","r",stdin);
+    freopen("std.out","w",stdout);
+    for (int i=0;i<30000;++i)
+    {
+        scanf("%d",&ty);
+        if (ty==0)
+        {
+            scanf("%d%d",&key,&val);
+            rng.insert(key,val);
+        }
+        else
+        {
+            scanf("%d",&key);
+            printf("%d\n",rng.lookup(key));
+        }
+    }
 }

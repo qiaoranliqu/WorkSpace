@@ -41,20 +41,25 @@ class MyDesign{
 //		table[1]=new MultiLudo();
 		table[2]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
 		fd=open(LogFile.c_str(),O_RDWR | O_APPEND | O_CREAT,0777);
-		fsync(fd);
+//		fsync(fd);
 		close(fd);
 //		table[2]=new SingleLudo();
 	}
 	int LogBufferOffset=0,logFileOffset=0;
 	void appendLog(char* k,int klen)
 	{
-		int kOffset=0,fd=open(LogFile.c_str(),O_RDWR | O_APPEND | O_CREAT,0777);
+//		fprintf(stderr,"%d %c\n",klen,k[0]);
+		int kOffset=0,fd=open(LogFile.c_str(),O_RDWR | O_APPEND);
+//		fprintf(stderr,"%d\n",fd);
+//		exit(0);
 		while (LogBufferOffset+(klen-kOffset)>=4096)
 		{
 			int toWrite=4096-LogBufferOffset;
 			memcpy(LogBuff+LogBufferOffset,k+kOffset,toWrite);
 			LogBufferOffset=0;
 			kOffset+=toWrite;
+			fprintf(stderr,"%d\n",logFileOffset);
+			pwrite(fd,LogBuff,4096,logFileOffset);
 			logFileOffset+=4096;
 		}
 		if (logFileOffset > logFileSize)
@@ -64,6 +69,8 @@ class MyDesign{
 		}
 		int toWrite=klen-kOffset;
 		memcpy(LogBuff+LogBufferOffset,k+kOffset,toWrite);
+		LogBufferOffset+=toWrite;
+		close(fd);
 	}
 	void Insert_Log(string Cur_Type,const Key &Cur_Key,const Value &Cur_Value)
 	{

@@ -1,0 +1,35 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/altria/WorkSpace/Ludo/release/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_32499/fast"
+/usr/bin/make -f CMakeFiles/cmTC_32499.dir/build.make CMakeFiles/cmTC_32499.dir/build
+make[1]: Entering directory '/home/altria/WorkSpace/Ludo/release/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_32499.dir/CheckSymbolExists.c.o
+/usr/bin/clang   -march=native -mavx -maes -Ofast -DNDEBUG    -o CMakeFiles/cmTC_32499.dir/CheckSymbolExists.c.o   -c /home/altria/WorkSpace/Ludo/release/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_32499
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_32499.dir/link.txt --verbose=1
+/usr/bin/clang  -march=native -mavx -maes -Ofast -DNDEBUG     CMakeFiles/cmTC_32499.dir/CheckSymbolExists.c.o  -o cmTC_32499 
+CMakeFiles/cmTC_32499.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x6): undefined reference to `pthread_create'
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+CMakeFiles/cmTC_32499.dir/build.make:97: recipe for target 'cmTC_32499' failed
+make[1]: *** [cmTC_32499] Error 1
+make[1]: Leaving directory '/home/altria/WorkSpace/Ludo/release/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_32499/fast' failed
+make: *** [cmTC_32499/fast] Error 2
+
+File /home/altria/WorkSpace/Ludo/release/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
