@@ -17,6 +17,10 @@ class SingleLudo : public Base{
     {
         empty_table=true;
     }
+    explicit SingleLudo(string &_FileName)
+    {
+        FileName=_FileName;
+    }
     explicit SingleLudo(const unordered_map<Key,Value,Hasher32<Key> > &migrate,const string &_FileName)
     {
         FileName=_FileName;
@@ -43,7 +47,7 @@ class SingleLudo : public Base{
     {
             auto iter=migrate.begin();
             ControlPlaneMinimalPerfectCuckoo<Key,Value> tmpludo(migrate.size());
-            //TODO MySize=;
+            MySize=tmpludo.getBucketSize();
             if(filter_use) MyFilter=new cuckoo::VacuumFilter<Key,MAXBITS,cuckoofilter::BetterTable>(migrate.size());
             while (iter!=migrate.end())
             {
@@ -52,12 +56,12 @@ class SingleLudo : public Base{
                     ++iter;
             } 
             empty_table=false;
-            To_File(tmpludo);
+            tmpludo.to_File(FileName);
     }
     unordered_map<Key,Value,Hasher32<Key> > toMap()
     {
              unordered_map<Key,Value,Hasher32<Key> > mmap;
-             fd=open(FileName,O_RDWR);
+             fd=open(FileName.c_str(),O_RDWR);
              if (fd==-1) Counter::count("Ludo toMap file open failed");
              int tmpsize;
              if (read(fd,&tmpsize,sizeof(tmpsize))!=tmpsize) Counter::count("SingleLudo storefile error");
@@ -74,7 +78,7 @@ class SingleLudo : public Base{
     }
     void send_to_map(unordered_map<Key,Value,Hasher32<Key> > &mmap)
     {
-             fd=open(FileName,O_RDWR);
+             fd=open(FileName.c_cstr(),O_RDWR);
              if (fd==-1) Counter::count("Ludo toMap file open failed");
              int tmpsize;
              if (read(fd,&tmpsize,sizeof(tmpsize))!=tmpsize) Counter::count("SingleLudo storefile error");
@@ -95,4 +99,4 @@ class SingleLudo : public Base{
             Clear(Merge);
             return OK;
     }
-}   
+};

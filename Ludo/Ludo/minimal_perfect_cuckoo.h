@@ -15,10 +15,10 @@
 
 #pragma once
 
-#include "../CuckooPresized/cuckoo_ht.h"
+#include "cuckoo_ht.h"
 #include "../hash.h"
 #include "../common.h"
-#include "../Othello/data_plane_othello.h"
+#include "../SetSep/setsep.h"
 
 // Class for efficiently storing key->value mappings when the size is
 // known in advance and the keys are pre-hashed into uint64s.
