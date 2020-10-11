@@ -48,7 +48,7 @@ class DataPlaneSetSep{
     return uint32_t((uint64_t(r) * bucketCount) >> 32);
    }
 
-  static inline uint8_t getBit(uint64_t x, uint y) { return (x >> y) & 1U; }
+
     explicit DataPlaneSetSep()
     {
             Counter::count("SetSep Build ERROR");

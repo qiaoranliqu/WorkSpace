@@ -38,9 +38,8 @@ class MyDesign{
 				table[i]=BuildByConfig(configure[i]);
 		*/	
 		table[0]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
-		table[1]=new MultiLudo<Key,Value>();
-//		table[1]=new MultiLudo();
-		table[2]=new SingleLudo<Key,Value>();
+		table[1]=new MultiLudo<Key,Value>("SecondLayer");
+		table[2]=new SingleLudo<Key,Value>("ThirdLayer");
 		fd=open(LogFile.c_str(),O_RDWR | O_APPEND | O_CREAT,0777);
 //		fsync(fd);
 		close(fd);
