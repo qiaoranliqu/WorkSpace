@@ -5,6 +5,7 @@
 #include "../common.h"
 #include "common.h"
 #include "Cuckoo/cuckoo.h"
+#include "SingleLudo.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -37,9 +38,9 @@ class MyDesign{
 				table[i]=BuildByConfig(configure[i]);
 		*/	
 		table[0]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
-		table[1]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
+		table[1]=new MultiLudo<Key,Value>();
 //		table[1]=new MultiLudo();
-		table[2]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
+		table[2]=new SingleLudo<Key,Value>();
 		fd=open(LogFile.c_str(),O_RDWR | O_APPEND | O_CREAT,0777);
 //		fsync(fd);
 		close(fd);

@@ -690,6 +690,7 @@ public:
       }
     }
     pwrite(fd,LogBuff,LogBufferOffset,logFileOffset);
+    close(fd);
     return SeedCollector;
   }
 
@@ -699,7 +700,7 @@ public:
       if (fd==-1) Counter::count("SingleLudo fail to open file");
       uint32_t Offset=0;
       WriteIntoFile<int>(fd,(int)buckets_.size());
-      return ExportToSetSep(SetMap,fd);
+      ExportToSetSep(SetMap,fd);
   }
 
   Bucket getDpBucket(uint32_t index) const {
@@ -791,23 +792,24 @@ public:
     return false;
   }
 };
-/*
+
 template<class Key, class Value, uint8_t VL = sizeof(Value) * 8, uint8_t DL = 0>
 class DataPlaneMinimalPerfectCuckoo {
   static const uint8_t kSlotsPerBucket = 4;   // modification to this value leads to undefined behavior
-  static const uint8_t bucketLength = LocatorSeedLength + kSlotsPerBucket * (VL + DL);
+  static const uint8_t bucketLength = LocatorSeedLength;
 
   static const uint64_t ValueMask = (1ULL << VL) - 1;
   static const uint64_t DigestMask = ((1ULL << DL) - 1) << VL;
   static const uint64_t VDMask = (1ULL << (VL + DL)) - 1;
+
+  static constexpr uint64_t SizePerSlot=(sizeof(Key)<<3)+VL;
 
 public:
   FastHasher64<Key> h;
   uint32_t num_buckets_;
 
   std::vector<uint64_t> memory;
-  FastHasher64<Key> digestH;
-  DataPlaneOthello<Key, uint8_t, 1> locator;
+  FastHasher64<Key> digest;
   CuckooHashTable<uint32_t, uint8_t> overflow;
 
   struct Bucket {  // only as parameters and return values for easy access. the storage is compact.
@@ -830,7 +832,7 @@ public:
   };
 
   explicit DataPlaneMinimalPerfectCuckoo(const ControlPlaneMinimalPerfectCuckoo<Key, Value, VL, DL> &cp)
-    : num_buckets_(cp.buckets_.size()), h(cp.h), locator(cp.locator), overflow(cp.entryCount * 0.012),
+    : num_buckets_(cp.buckets_.size()), h(cp.h),overflow(cp.entryCount * 0.012),
       digestH(cp.digestH) {
 
     resetMemory();
@@ -843,45 +845,6 @@ public:
 
       if (cpBucket.seed >= MaxArrangementSeed) {
         overflow.insert(bktIdx, cpBucket.seed);
-      }
-
-      const FastHasher64<Key> locateHash(cpBucket.seed);
-
-      for (char slot = 0; slot < kSlotsPerBucket; ++slot) {
-        if (cpBucket.occupiedMask & (1U << slot)) {
-          const Key &k = cpBucket.keys[slot];
-          dpBucket.values[locateHash(k) >> 62] = cpBucket.values[slot];
-        }
-      }
-
-      writeBucket(dpBucket, bktIdx);
-    }
-  }
-
-  template<class V2>
-  DataPlaneMinimalPerfectCuckoo(const ControlPlaneMinimalPerfectCuckoo<Key, V2, VL, DL> &cp, unordered_map<V2, Value> m)
-    : num_buckets_(cp.buckets_.size()), h(cp.h), locator(cp.locator),
-      overflow(cp.entryCount * 0.012), digestH(cp.digestH) {
-
-    resetMemory();
-
-    for (uint32_t bktIdx = 0; bktIdx < num_buckets_; ++bktIdx) {
-      const typename ControlPlaneMinimalPerfectCuckoo<Key, V2, VL>::Bucket &cpBucket = cp.buckets_[bktIdx];
-      Bucket dpBucket;
-      dpBucket.seed = cpBucket.seed >= MaxArrangementSeed ? MaxArrangementSeed : cpBucket.seed;
-      memset(dpBucket.values, 0, kSlotsPerBucket * sizeof(Value));
-
-      if (cpBucket.seed >= MaxArrangementSeed) {
-        overflow.insert(bktIdx, cpBucket.seed);
-      }
-
-      const FastHasher64<Key> locateHash(cpBucket.seed);
-
-      for (char slot = 0; slot < kSlotsPerBucket; ++slot) {
-        if (cpBucket.occupiedMask & (1U << slot)) {
-          const Key &k = cpBucket.keys[slot];
-          dpBucket.values[locateHash(k) >> 62] = m[cpBucket.values[slot]];
-        }
       }
 
       writeBucket(dpBucket, bktIdx);
@@ -940,14 +903,6 @@ public:
     assert(bucket.seed <= MaxArrangementSeed);
     writeMem<LocatorSeedLength>(start, offset, bucket.seed);
 
-    for (char i = 0; i < kSlotsPerBucket; ++i) {
-      uint64_t offsetFromBeginning = i1 + LocatorSeedLength + i * VL;
-      start = offsetFromBeginning / 64;
-      offset = char(offsetFromBeginning % 64);
-
-      writeMem<VL>(start, offset, bucket.values[i]);
-    }
-
 #ifndef NDEBUG
     Bucket retrieved = readBucket(index);
     retrieved.seed = min(MaxArrangementSeed, retrieved.seed);
@@ -967,37 +922,20 @@ public:
       overflow.lookUp(index, bucket.seed);
     }
 
-    for (char i = 0; i < kSlotsPerBucket; ++i) {
-      uint64_t offsetFromBeginning = i1 + LocatorSeedLength + i * VL;
-      start = offsetFromBeginning / 64;
-      offset = char(offsetFromBeginning % 64);
-
-      bucket.values[i] = readMem<VL>(start, offset);
-    }
-
     return bucket;
   }
 
-  inline void writeSlot(uint32_t bid, char sid, Value val) {
-    uint64_t offsetFromBeginning = uint64_t(bid) * bucketLength + LocatorSeedLength + sid * VL;
-    uint64_t start = offsetFromBeginning / 64;
-    char offset = char(offsetFromBeginning % 64);
-
-    writeMem<VL>(start, offset, val);
-  }
-
-  inline Value readSlot(uint32_t bid, char sid) {
-    uint64_t offsetFromBeginning = uint64_t(bid) * bucketLength + LocatorSeedLength + sid * VL;
-    uint64_t start = offsetFromBeginning / 64;
-    char offset = char(offsetFromBeginning % 64);
-
-    return readMem<VL>(start, offset);
+  inline Value readSlot(int fd,uint32_t bid, char sid) {
+      //TODO
+      Value myValue;
+      pread(fd,&myValue,sizeof(Value)*8,32+SizePerSlot*(bid*kSlotsPerBucket+sid));
+      return myValue;
   }
 
   unordered_map<Key, Value> fallback;
 
   // Returns true if found.  Sets *out = value.
-  inline bool lookUp(const Key &k, Value &out) const {
+  inline bool lookup(const Key &k, Value &out,const DataPlaneSetSep<Key,bool,1> &SS,int fd) const {
     if (!fallback.empty()) {
       auto it = fallback.find(k);
       if (it != fallback.end())
@@ -1010,8 +948,10 @@ public:
       uint8_t va1 = lock[buckets[0] & 8191], vb1 = lock[buckets[1] & 8191];
       COMPILER_BARRIER();
       if (va1 % 2 == 1 || vb1 % 2 == 1) continue;
+      
+      uint32_t BucketID=buckets[SS.lookup(k)];
 
-      Bucket bucket = readBucket(buckets[locator.lookUp(k)]);
+      Bucket bucket = readBucket(BucketID);
 
       COMPILER_BARRIER();
       uint8_t va2 = lock[buckets[0] & 8191], vb2 = lock[buckets[1] & 8191];
@@ -1019,75 +959,13 @@ public:
       if (va1 != va2 || vb1 != vb2) continue;
 
       uint64_t i = FastHasher64<Key>(bucket.seed)(k) >> 62;
-      Value result = bucket.values[i];
+      Value result = readSlot(fd,BucketID,i);
 
       if ((result & DigestMask) == ((digestH(k) << VL) & DigestMask)) {
         out = result & ValueMask;
         return true;
       } else { return false; }
     }
-  }
-
-  inline void applyInsert(const vector<MPC_PathEntry> &path, Value value) {
-    for (int i = 0; i < path.size(); ++i) {
-      MPC_PathEntry entry = path[i];
-      Bucket bucket = readBucket(entry.bid);
-      bucket.seed = min(entry.newSeed, MaxArrangementSeed);
-
-      uint8_t toSlots[] = {entry.s0, entry.s1, entry.s2, entry.s3};
-
-      Value buffer[4];       // solve the permutation is slow. just copy the 4 elements
-      for (char s = 0; s < 4; ++s) {
-        buffer[s] = bucket.values[s];
-      }
-
-      for (char s = 0; s < 4; ++s) {
-        bucket.values[toSlots[s]] = buffer[s];
-      }
-
-      if (i + 1 == path.size()) {  // put the new value
-        bucket.values[entry.sid] = value;
-      } else {  // move key from another bucket and slot to this bucket and slot
-        MPC_PathEntry from = path[i + 1];
-        uint8_t tmp[4] = {from.s0, from.s1, from.s2, from.s3};
-        uint8_t sid;
-        for (uint8_t ii = 0; ii < 4; ++ii) {
-          if (tmp[ii] == from.sid) {
-            sid = ii;
-            break;
-          }
-        }
-        bucket.values[entry.sid] = readSlot(from.bid, sid);
-      }
-
-      lock[entry.bid & 8191]++;
-      COMPILER_BARRIER();
-
-      if (entry.locatorCC.size()) {
-        locator.fixHalfTreeByConnectedComponent(entry.locatorCC, 1);
-      }
-
-      if (bucket.seed == MaxArrangementSeed) {
-        overflow.insert(entry.bid, entry.newSeed, true);
-      }
-      writeBucket(bucket, entry.bid);
-
-      COMPILER_BARRIER();
-      lock[entry.bid & 8191]++;
-    }
-  }
-
-  inline void applyUpdate(uint32_t bs, Value val) {
-    uint32_t bid = bs >> 2;
-    uint8_t sid = bs & 3;
-
-    lock[bid & 8191]++;
-    COMPILER_BARRIER();
-
-    writeSlot(bid, sid, val & ValueMask);
-
-    COMPILER_BARRIER();
-    lock[bid & 8191]++;
   }
 
   inline uint64_t getMemoryCost() const {
@@ -1111,4 +989,3 @@ public:
     twoBuckets[1] = multiply_high_u32(x >> 32, num_buckets_);
   }
 };
-*/

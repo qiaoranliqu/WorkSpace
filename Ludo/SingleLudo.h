@@ -11,7 +11,7 @@ class SingleLudo : public Base{
     string FileName;
     cuckoofilter::VacuumFilter<Key,MAXBITS,cuckoofilter::BetterTable>* MyFilter;//Filter Array collector;
     DataPlaneSetSep<Key,bool,1> Indicator;  
-    vector<uint8_t>Seed;//Seed Array collector;
+    DataPlaneMinimalPerfectCuckoo<Key,Value> Ludo;//Seed Array collector;
     bool empty_table=true;
     int MySize;
     explicit SingleLudo()
@@ -43,6 +43,14 @@ class SingleLudo : public Base{
     {
             if (filter_use==true&&MyFilter.Contain(k)) return EMPTY;
             //TODO
+            int fd=open(FileName.c_str(),O_RDONLY);
+            if (fd==-1) 
+            {
+                Counter::count("SingleLudo lookup fail to open files");
+                return ERROR;
+            }
+            if (Ludo.lookup(k,out,Indicator,fd)==true) return OK;
+            return EMPTY;
     }
     void Clear(const unordered_map<Key,Value,Hasher32<Key> > &migrate)
     {
@@ -57,7 +65,8 @@ class SingleLudo : public Base{
                     ++iter;
             } 
             empty_table=false;
-            Seed=tmpludo.to_File(FileName,Indicator);
+            tmpludo.to_File();
+            Ludo=new DataPlaneMinimalPerfectCuckoo(tmpludo);
     }
     unordered_map<Key,Value,Hasher32<Key> > toMap()
     {
