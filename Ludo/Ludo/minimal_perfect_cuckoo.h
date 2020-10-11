@@ -19,6 +19,9 @@
 #include "../hash.h"
 #include "../common.h"
 #include "../SetSep/setsep.h"
+#include "../SingleLudo.h"
+
+#define MAX_BUFF_SIZE 4096
 
 // Class for efficiently storing key->value mappings when the size is
 // known in advance and the keys are pre-hashed into uint64s.
@@ -51,7 +54,6 @@ struct MPC_PathEntry {
   uint8_t sid : 2;
   uint8_t newSeed;
   uint8_t s0:2, s1:2, s2:2, s3:2;
-  vector<uint32_t> locatorCC;
   // locatorCC contains one end of the modified key, while overflowCC contains both ends
 };
 
@@ -171,10 +173,11 @@ public:
   FastHasher64<Key> h;   // the hash value is divided in half for two hashes
   uint32_t entryCount = 0;
 
-  ControlPlaneOthello<Key, uint8_t, 1, 0, true> locator;
 
   // Set upon initialization: num_entries / kLoadFactor / kSlotsPerBucket.
   std::vector<Bucket> buckets_;
+  std::vector<Key> SetKeys;
+  std::vector<Value> SetValues;
 
   // Utility function to compute (x * y) >> 64, or "multiply high".
   // On x86-64, this is a single instruction, but not all platforms
@@ -201,7 +204,7 @@ public:
   // The key type is fixed as a pre-hashed key for this specialized use.
   template<class V, uint8_t vl, uint8_t dl>
   ControlPlaneMinimalPerfectCuckoo(ControlPlaneMinimalPerfectCuckoo<Key, V, vl, dl> another, unordered_map<V, Value> m)
-    : locator(another.locator), entryCount(another.entryCount),
+    : entryCount(another.entryCount),
       h(another.h), digestH(another.digestH) {
     Bucket empty_bucket;
     buckets_.clear();
@@ -241,10 +244,11 @@ public:
 
     Bucket empty_bucket;
     buckets_.clear();
+    SetKeys.clear();
+    SetValues.clear();
     buckets_.resize(num_buckets, empty_bucket);
-
-    locator.clear();
-    locator.resizeKey(num_entries, true);
+    SetKeys.resize(num_entries);
+    SetValues.resize(num_entries);
   }
 
   pair<uint32_t, uint32_t> locate(const Key &k) const {
@@ -373,25 +377,6 @@ public:
     return false;
   }
 
-//  /// compose two maps in place
-//  void Compose(unordered_map<Value, Value> &migrate) {
-//    for (auto &bucket : buckets_) {
-//      for (char slot = 0; slot < kSlotsPerBucket; ++slot) {
-//        if (bucket.occupiedMask & (1ULL << slot)) {
-//          Value &value = bucket.values[slot];
-//          auto it = migrate.find(value);
-//          if (it != migrate.end()) {
-//            Value dst = it->second;
-//            if (dst == Value(-1)) bucket.occupiedMask &= ~(1ULL << slot);
-//            else bucket.values[slot] = it->second;
-//          }
-//
-////          checkIntegrity();
-//        }
-//      }
-//    }
-//  }
-
   template<class NV>
   ControlPlaneMinimalPerfectCuckoo<Key, NV> Compose(unordered_map<Value, NV> &migrate) {
     ControlPlaneMinimalPerfectCuckoo<Key, NV> other;
@@ -502,23 +487,6 @@ public:
     return -1;
   }
 
-  inline int64_t registerKey(const Key &k, uint32_t currentBucket, bool withDp) {
-    uint32_t buckets[2];
-    fast_map_to_buckets(h(k), buckets);
-
-    return locator.insert(k, buckets[1] == currentBucket, withDp);
-  }
-
-  inline void unregisterKey(const Key &k) {
-    locator.remove(k);
-  }
-
-  inline int64_t toggleKey(const Key &k) {
-    uint8_t result;
-    if (locator.lookUp(k, result)) return locator.updateMapping(k, !result);
-    throw runtime_error("No such key");
-  }
-
   // For the associative cuckoo table, check all of the slots in
   // the bucket to see if the key is present.
   inline bool RemoveInBucket(const Key &k, Bucket &bucket) {
@@ -526,8 +494,6 @@ public:
       if ((bucket.occupiedMask & (1U << i)) && bucket.keys[i] == k) {
         bucket.occupiedMask ^= 1U << i;
 
-        unregisterKey(k);
-//        checkIntegrity();
         return true;
       }
     }
@@ -553,11 +519,9 @@ public:
       uint8_t oldSeed = getSeed(b);
       uint8_t toSlot[4];
       uint8_t seed = updateSeed(b, toSlot, slot);
-      int64_t result = registerKey(k, b, path != nullptr);
 
       path->push_back({b, uint8_t(FastHasher64<Key>(seed)(k) >> 62), seed,
-                       toSlot[0], toSlot[1], toSlot[2], toSlot[3],
-                       result ? locator.getHalfTree(k, result > 0, false) : vector<uint32_t>()});
+                       toSlot[0], toSlot[1], toSlot[2], toSlot[3]});
     }
     // checkIntegrity();
   }
@@ -577,17 +541,48 @@ public:
       uint8_t oldSeed = getSeed(dBkt);
       uint8_t toSlot[4];
       uint8_t seed = updateSeed(dBkt, toSlot, dSlot);
-      int64_t result = toggleKey(k);
-      assert(result != 0);
 
       path->push_back({dBkt, uint8_t(FastHasher64<Key>(seed)(k) >> 62), seed,
-                       toSlot[0], toSlot[1], toSlot[2], toSlot[3],
-                       locator.getHalfTree(k, result > 0, false)});
+                       toSlot[0], toSlot[1], toSlot[2], toSlot[3]});
     }
 //    checkIntegrity();
   }
 
-  uint8_t updateSeed(uint32_t bktIdx, uint8_t *dpSlotMove = 0, char slotWithNewKey = -1) {
+ //Print part
+	char LogBuff[MAX_BUFF_SIZE];
+	char TempBuff[MAX_BUFF_SIZE];
+	int LogBufferOffset=0,logFileOffset=0;
+	void appendLog(int fd,char* k,int klen)
+	{
+		while (LogBufferOffset+(klen-kOffset)>=4096)
+		{
+      int kOffset=0,toWrite=4096-LogBufferOffset;
+			memcpy(LogBuff+LogBufferOffset,k+kOffset,toWrite);
+			LogBufferOffset=0;
+			kOffset+=toWrite;
+//			fprintf(stderr,"%d\n",logFileOffset);
+			pwrite(fd,LogBuff,4096,logFileOffset);
+			logFileOffset+=4096;
+		}
+    /*
+		if (logFileOffset > logFileSize)
+		{
+			 Counter::count("Design fail logFile is too large");
+			 return;
+		}
+    */
+		int toWrite=klen-kOffset;
+		memcpy(LogBuff+LogBufferOffset,k+kOffset,toWrite);
+		LogBufferOffset+=toWrite;
+	}
+  template<typename T>
+	void WriteIntoFile(int fd,T Cur_Value)
+	{
+		strncpy(TempBuff,(char*)&Cur_Value,sizeof(T)*8);
+		appendLog(fd,TempBuff,sizeof(T)*8);
+	}
+
+  uint8_t updateSeed(uint32_t bktIdx, uint8_t *dpSlotMove = 0, char slotWithNewKey = -1,int fd=-1) {
     Bucket &bucket = buckets_[bktIdx];
     FastHasher64<Key> h;
     bool occupied[4];
@@ -608,7 +603,22 @@ public:
         }
       }
 
+
       if (success) {
+        if (fd!=-1)
+        {
+          uint8_t ResID[kSlotsPerBucket]={-1};
+          for (char slot = 0; slot < kSlotsPerBucket; ++slot) {
+            if (bucket.occupiedMask & (1 << slot)) {
+              uint8_t i = uint8_t(h(bucket.keys[slot]) >> 62);
+              ResID[i]=slot;
+            }
+          }
+          for (char slot = 0; slot < kSlotsPerBucket; ++slot) {
+            if (ResID[slot]==-1) WriteIntoFile<Key>(fd,(Key)0),WriteIntoFile<Value>(fd,(Value)0);
+            else WriteIntoFile<Key>(fd,bucket.keys[ResID[slot]]),WriteIntoFile<Value>(fd,bucket.values[ResID[slot]]);
+          }
+        }
         bool withDp = dpSlotMove != nullptr;
 
         if (withDp) {
@@ -657,16 +667,16 @@ public:
     throw runtime_error("Cannot generate a proper hash seed within 255 tries, which is rare");
   }
 
-  void prepareToExport() {
+  vector<uint8_t> ExportToSetSep(DataPlaneSetSep<Key,Value,bool> &SetMap,int fd) {
     vector<Key> keys;
-    vector<uint8_t> values;
+    vector<bool> values;
+    vector<uint8_t> SeedCollector;
     keys.reserve(entryCount);
     values.reserve(entryCount);
-
+    SeedCollector.clear();
     for (uint32_t bktIdx = 0; bktIdx < buckets_.size(); ++bktIdx) {
       Bucket &bucket = buckets_[bktIdx];
-      updateSeed(bktIdx);
-
+      SeedCollector.push_back(updateSeed(bktIdx,nullptr,-1,fd));
       for (char s = 0; s < kSlotsPerBucket; ++s) {
         if (bucket.occupiedMask & (1 << s)) {
           uint32_t buckets[2];
@@ -674,15 +684,22 @@ public:
           fast_map_to_buckets(h(k), buckets);
 
           keys.push_back(k);
-          values.push_back(uint8_t(buckets[1] == bktIdx));
+          values.push_back(buckets[1] == bktIdx);
+          SetMap=new DataPlaneSetSep<Key,Value,bool>(new SetSep<Key,Value,bool>(keys.size(),true,keys,values));
         }
       }
     }
+    pwrite(fd,LogBuff,LogBufferOffset,logFileOffset);
+    return SeedCollector;
+  }
 
-    locator.keys = keys;
-    locator.values = values;
-    locator.keyCnt = keys.size();
-    locator.build();
+  void to_File(string FileName,DataPlaneSetSep<Key,Value,bool> &SetMap)
+  {
+      int fd=open(FileName.c_str(),O_RDWR | O_TRUNC |O_CREAT,0777);
+      if (fd==-1) Counter::count("SingleLudo fail to open file");
+      uint32_t Offset=0;
+      WriteIntoFile<int>(fd,(int)buckets_.size());
+      return ExportToSetSep(SetMap,fd);
   }
 
   Bucket getDpBucket(uint32_t index) const {
@@ -774,7 +791,7 @@ public:
     return false;
   }
 };
-
+/*
 template<class Key, class Value, uint8_t VL = sizeof(Value) * 8, uint8_t DL = 0>
 class DataPlaneMinimalPerfectCuckoo {
   static const uint8_t kSlotsPerBucket = 4;   // modification to this value leads to undefined behavior
@@ -1094,4 +1111,4 @@ public:
     twoBuckets[1] = multiply_high_u32(x >> 32, num_buckets_);
   }
 };
-
+*/

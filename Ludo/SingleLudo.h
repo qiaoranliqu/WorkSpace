@@ -2,7 +2,7 @@
 
 #include "Base.h"
 #include "common.h"
-#include "Ludo/MinimalPerfectCuckoo/minimal_perfect_cuckoo.h"
+#include "Ludo/minimal_perfect_cuckoo.h"
 #include "VacuumFilter/vacuum_filter.h"
 
 template<class Key,class Value,int MAXBITS=5,bool filter_use=true>
@@ -10,7 +10,8 @@ class SingleLudo : public Base{
     public:
     string FileName;
     cuckoofilter::VacuumFilter<Key,MAXBITS,cuckoofilter::BetterTable>* MyFilter;//Filter Array collector;
-    int* Seed;//Seed Array collector;
+    DataPlaneSetSep<Key,bool,1> Indicator;  
+    vector<uint8_t>Seed;//Seed Array collector;
     bool empty_table=true;
     int MySize;
     explicit SingleLudo()
@@ -56,7 +57,7 @@ class SingleLudo : public Base{
                     ++iter;
             } 
             empty_table=false;
-            tmpludo.to_File(FileName);
+            Seed=tmpludo.to_File(FileName,Indicator);
     }
     unordered_map<Key,Value,Hasher32<Key> > toMap()
     {
@@ -96,7 +97,7 @@ class SingleLudo : public Base{
     int Merge(unordered_map<Key,Value,Hasher32<key> >&migrate)
     {
             if (!empty_table) send_to_map(migrate);
-            Clear(Merge);
+            Clear(migrate);
             return OK;
     }
 };

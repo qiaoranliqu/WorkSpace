@@ -76,8 +76,8 @@ class MyDesign{
 	{
 		int tmplength=0;
 		strncpy(TempBuff,Cur_Type.c_str(),Cur_Type.length()); tmplength+=Cur_Type.length();
-		strncpy(TempBuff+tmplength,(char*)&Cur_Key,sizeof(Key)); tmplength+=sizeof(Key);
-		strncpy(TempBuff+tmplength,(char*)&Cur_Value,sizeof(Value)); tmplength+=sizeof(Value);
+		strncpy(TempBuff+tmplength,(char*)&Cur_Key,sizeof(Key)*8); tmplength+=sizeof(Key)*8;
+		strncpy(TempBuff+tmplength,(char*)&Cur_Value,sizeof(Value)*8); tmplength+=sizeof(Value)*8;
 		appendLog(TempBuff,tmplength);
 	}
 	uint32_t insert(const Key& Cur_Key,const Value& Cur_Val)
