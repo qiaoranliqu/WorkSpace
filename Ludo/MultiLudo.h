@@ -10,7 +10,7 @@ template<class Key,class Value,int MAXBITS=5,bool filter_use=true>
 class MultiLudo : public Base{
     public:
     string PreFixName;
-    SingleLudo<Key,Value>* Ludo[MAX_TABLE_SIZE];
+    SingleLudo<Key,Value,MAXBITS,filter_use>* Ludo[MAX_TABLE_SIZE];
     int TABLE_NUM=0;
     bool empty_table=true;
     explicit MultiLudo()
@@ -42,11 +42,15 @@ class MultiLudo : public Base{
     unordered_map<Key,Value,Hasher32<Key> > toMap()
     {
             unordered_map<Key,Value,Hasher32<Key> > mmap;
-            for (int i=0;i<TABLE_NUM;++i)
+            for (int i=TABLE_NUM-1;i>=0;++i)
             {
-                unordered_map<Key,Value,Hasher32<Key> >tmpmap;
+                unordered_map<Key,Value,Hasher32<Key> >tmpmap=Ludo[i].toMap();
                 auto it=tmpmap.begin();
-
+                while (it!=tmpmap.end())
+                {
+                        if (mmap.find(it->fi)==mmap.end()) mmap[it->fi]=it->se;
+                        ++it;
+                }
             }
             TABLE_NUM=0;
             return mmap;

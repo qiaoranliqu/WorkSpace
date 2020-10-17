@@ -928,7 +928,7 @@ public:
   inline Value readSlot(int fd,uint32_t bid, char sid) {
       //TODO
       Value myValue;
-      pread(fd,&myValue,sizeof(Value)*8,32+SizePerSlot*(bid*kSlotsPerBucket+sid));
+      pread(fd,&myValue,sizeof(Value)*8,32+SizePerSlot*(bid*kSlotsPerBucket+sid)+sizeof(Key)*8);
       return myValue;
   }
 

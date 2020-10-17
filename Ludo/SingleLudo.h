@@ -42,7 +42,6 @@ class SingleLudo : public Base{
     int lookup(const Key &k,Value &out)
     {
             if (filter_use==true&&MyFilter.Contain(k)) return EMPTY;
-            //TODO
             int fd=open(FileName.c_str(),O_RDONLY);
             if (fd==-1) 
             {
