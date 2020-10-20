@@ -15,6 +15,11 @@
 
 #pragma once
 
+#include <cstdlib>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "cuckoo_ht.h"
 #include "../hash.h"
 #include "../common.h"
@@ -555,9 +560,10 @@ public:
 	int LogBufferOffset=0,logFileOffset=0;
 	void appendLog(int fd,char* k,int klen)
 	{
+    int kOffset=0;
 		while (LogBufferOffset+(klen-kOffset)>=4096)
 		{
-      int kOffset=0,toWrite=4096-LogBufferOffset;
+      int toWrite=4096-LogBufferOffset;
 			memcpy(LogBuff+LogBufferOffset,k+kOffset,toWrite);
 			LogBufferOffset=0;
 			kOffset+=toWrite;
@@ -668,16 +674,14 @@ public:
     throw runtime_error("Cannot generate a proper hash seed within 255 tries, which is rare");
   }
 
-  vector<uint8_t> ExportToSetSep(DataPlaneSetSep<Key,Value,bool> &SetMap,int fd) {
+  void ExportToSetSep(DataPlaneSetSep<Key,Value,1> &SetMap,int fd) {
     vector<Key> keys;
     vector<bool> values;
-    vector<uint8_t> SeedCollector;
     keys.reserve(entryCount);
     values.reserve(entryCount);
-    SeedCollector.clear();
     for (uint32_t bktIdx = 0; bktIdx < buckets_.size(); ++bktIdx) {
       Bucket &bucket = buckets_[bktIdx];
-      SeedCollector.push_back(updateSeed(bktIdx,nullptr,-1,fd));
+      updateSeed(bktIdx,nullptr,-1,fd);
       for (char s = 0; s < kSlotsPerBucket; ++s) {
         if (bucket.occupiedMask & (1 << s)) {
           uint32_t buckets[2];
@@ -686,16 +690,15 @@ public:
 
           keys.push_back(k);
           values.push_back(buckets[1] == bktIdx);
-          SetMap=new DataPlaneSetSep<Key,Value,bool>(new SetSep<Key,Value,bool>(keys.size(),true,keys,values));
         }
       }
     }
+    SetMap=new DataPlaneSetSep<Key,Value,1>(new SetSep<Key,Value,1>(keys.size(),true,keys,values));
     pwrite(fd,LogBuff,LogBufferOffset,logFileOffset);
     close(fd);
-    return SeedCollector;
   }
 
-  void to_File(string FileName,DataPlaneSetSep<Key,Value,bool> &SetMap)
+  void to_File(string FileName,DataPlaneSetSep<Key,Value,1> &SetMap)
   {
       int fd=open(FileName.c_str(),O_RDWR | O_TRUNC |O_CREAT,0777);
       if (fd==-1) Counter::count("SingleLudo fail to open file");
@@ -810,7 +813,7 @@ public:
   uint32_t num_buckets_;
 
   std::vector<uint64_t> memory;
-  FastHasher64<Key> digest;
+  FastHasher64<Key> digestH;
   CuckooHashTable<uint32_t, uint8_t> overflow;
 
   struct Bucket {  // only as parameters and return values for easy access. the storage is compact.
