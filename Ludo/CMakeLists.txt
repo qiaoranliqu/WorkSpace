@@ -48,7 +48,6 @@ set(COMMON_SOURCE_FILES
         utils/ClientSock.cpp
         utils/hashutil.cc
         input/input_types.cpp
-        VacuumFilter/printutil.cc
         )
 
 set(HEADER_FILES
@@ -69,7 +68,7 @@ set(HEADER_FILES
         input/input_types.h
         network/graph.h
         SetSep/bucket_map_to_group.h
-        Setsep/setsep.h
+        SetSep/setsep.h
         SetSep/DataPlaneSetSep.h
         Ludo/cuckoo_ht.h
         Ludo/minimal_perfect_cuckoo.h

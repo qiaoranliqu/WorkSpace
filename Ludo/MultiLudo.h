@@ -17,7 +17,7 @@ class MultiLudo : public Base<Key,Value>{
     {
         empty_table=true;
     }
-    explicit MultiLudo(string &_FileName)
+    explicit MultiLudo(const string _FileName)
     {
         PreFixName=_FileName;
     }
@@ -25,7 +25,7 @@ class MultiLudo : public Base<Key,Value>{
     {
             return ERROR;
     }
-    int delete(const Key &k)
+    int erase(const Key &k)
     {
             return ERROR;
     }
@@ -55,7 +55,7 @@ class MultiLudo : public Base<Key,Value>{
             TABLE_NUM=0;
             return mmap;
     }
-    int Merge(unordered_map<Key,Value,Hasher32<key> >&migrate)
+    int Merge(unordered_map<Key,Value,Hasher32<Key> >&migrate)
     {
             Ludo[TABLE_NUM]=new SingleLudo(migrate,PreFixName+"_"+to_string(TABLE_NUM));
             TABLE_NUM++;

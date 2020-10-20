@@ -18,11 +18,11 @@ class SingleLudo : public Base<Key,Value>{
     {
         empty_table=true;
     }
-    explicit SingleLudo(string &_FileName)
+    explicit SingleLudo(const string _FileName)
     {
         FileName=_FileName;
     }
-    explicit SingleLudo(const unordered_map<Key,Value,Hasher32<Key> > &migrate,const string &_FileName)
+    explicit SingleLudo(const unordered_map<Key,Value,Hasher32<Key> > &migrate,const string _FileName)
     {
         FileName=_FileName;
         Clear(migrate);
@@ -31,7 +31,7 @@ class SingleLudo : public Base<Key,Value>{
     {
             return ERROR;
     }
-    int delete(const Key &k)
+    int erase(const Key &k)
     {
             return ERROR;
     }
@@ -41,7 +41,7 @@ class SingleLudo : public Base<Key,Value>{
     }
     int lookup(const Key &k,Value &out)
     {
-            if (filter_use==true&&MyFilter.Contain(k)) return EMPTY;
+            if (filter_use==true&&MyFilter->Contain(k)) return EMPTY;
             int fd=open(FileName.c_str(),O_RDONLY);
             if (fd==-1) 
             {
@@ -60,17 +60,17 @@ class SingleLudo : public Base<Key,Value>{
             while (iter!=migrate.end())
             {
                     tmpludo.insert(iter->first,iter->second);
-                    if(filter_use) MyFilter.Add(iter->first);
+                    if(filter_use) MyFilter->Add(iter->first);
                     ++iter;
             } 
             empty_table=false;
             tmpludo.to_File();
-            Ludo=new DataPlaneMinimalPerfectCuckoo<Key,Value>(tmpludo);
+            Ludo=*(new DataPlaneMinimalPerfectCuckoo<Key,Value>(tmpludo));
     }
     unordered_map<Key,Value,Hasher32<Key> > toMap()
     {
              unordered_map<Key,Value,Hasher32<Key> > mmap;
-             fd=open(FileName.c_str(),O_RDWR);
+             int fd=open(FileName.c_str(),O_RDWR);
              if (fd==-1) Counter::count("Ludo toMap file open failed");
              int tmpsize;
              if (read(fd,&tmpsize,sizeof(tmpsize))!=tmpsize) Counter::count("SingleLudo storefile error");
@@ -93,7 +93,7 @@ class SingleLudo : public Base<Key,Value>{
              if (read(fd,&tmpsize,sizeof(tmpsize))!=tmpsize) Counter::count("SingleLudo storefile error");
              if (tmpsize!=MySize) Counter::count("SingleLudo file size is not satisified");
              Key nowKey; Value nowValue;
-             for (int bucket=0;bucket<MySize;++i)
+             for (int bucket=0;bucket<MySize;++bucket)
                 for (int slot=0;slot<4;++slot)
                 {
                     if (read(fd,&nowKey,sizeof(nowKey))!=sizeof(nowKey)) Counter::count("SingleLudo key error"); 

@@ -211,7 +211,7 @@ public:
     return insert(k, v);
   }
 
-  int Merge(const unordered_map<Key,Value,Hasher32<Key> >& other)
+  int Merge(unordered_map<Key,Value,Hasher32<Key> >& other)
   {
         return ERROR;
   }

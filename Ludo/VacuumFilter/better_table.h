@@ -6,7 +6,7 @@
 #include "bitsutil.h"
 #include "debug.h"
 #include "printutil.h"
-#include "../utils/CompactArray.h"
+#include "../utils/common.h"
 
 namespace cuckoofilter {
 
