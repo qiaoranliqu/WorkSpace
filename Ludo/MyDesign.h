@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include "MultiLudo.h"
 #include "../common.h"
 #include "common.h"
 #include "Cuckoo/cuckoo.h"
