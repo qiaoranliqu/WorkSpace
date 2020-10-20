@@ -69,7 +69,7 @@ set(HEADER_FILES
         input/input_types.h
         network/graph.h
         SetSep/bucket_map_to_group.h
-        Setsep/SetSep.h
+        Setsep/setsep.h
         SetSep/DataPlaneSetSep.h
         Ludo/cuckoo_ht.h
         Ludo/minimal_perfect_cuckoo.h

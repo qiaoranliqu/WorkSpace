@@ -21,6 +21,7 @@ class DataPlaneSetSep{
         uint8_t bitmaps[VL];
     };
 
+
     struct Block {
         uint8_t bucketMap[64];      // for 256 buckets, 2 bits for one bucket.  64 * 8 = 256 * 2 = 512
         Group groups[64];
@@ -34,6 +35,8 @@ class DataPlaneSetSep{
         return (bucketMap[bidx / 4] >> ((bidx % 4) * 2U)) & 3U;
         }
     };
+
+    static inline uint8_t getBit(uint64_t x, uint y) { return (x >> y) & 1U; }
 
     unordered_map<K, V> overflow;
 

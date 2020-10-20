@@ -18,6 +18,7 @@
 #include "cuckoo_ht.h"
 #include "../hash.h"
 #include "../common.h"
+#include "../SetSep/DataPlaneSetSep.h"
 #include "../SetSep/setsep.h"
 #include "../SingleLudo.h"
 
