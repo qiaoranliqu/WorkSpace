@@ -2,13 +2,13 @@
 
 #include <cstdlib>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "../common.h"
 #include "common.h"
 #include "Cuckoo/cuckoo.h"
 #include "SingleLudo.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
 #define MAX_TABLE_NUM 5
 #define MAX_BUFF_SIZE 4096

@@ -7,7 +7,7 @@
 #define MAX_TABLE_SIZE 16
 
 template<class Key,class Value,int MAXBITS=5,bool filter_use=true>
-class MultiLudo : public Base{
+class MultiLudo : public Base<Key,Value>{
     public:
     string PreFixName;
     SingleLudo<Key,Value,MAXBITS,filter_use>* Ludo[MAX_TABLE_SIZE];

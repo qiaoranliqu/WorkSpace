@@ -6,7 +6,7 @@
 #include "VacuumFilter/vacuum_filter.h"
 
 template<class Key,class Value,int MAXBITS=5,bool filter_use=true>
-class SingleLudo : public Base{
+class SingleLudo : public Base<Key,Value>{
     public:
     string FileName;
     cuckoofilter::VacuumFilter<Key,MAXBITS,cuckoofilter::BetterTable>* MyFilter;//Filter Array collector;
