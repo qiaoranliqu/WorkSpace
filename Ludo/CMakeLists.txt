@@ -44,26 +44,48 @@ include_directories(
 
 set(COMMON_SOURCE_FILES
         common.cpp
-        Cuckoo/farmhash/farmhash.cc
-        Cuckoo/utils/ClientSock.cpp
-        Cuckoo/utils/hashutil.cc
+        farmhash/farmhash.cc
+        utils/ClientSock.cpp
+        utils/hashutil.cc
         input/input_types.cpp
+        VacuumFilter/printutil.cc
         )
 
 set(HEADER_FILES
         common.h
         Base.h
-        Cuckoo/hash.h
-        Cuckoo/farmhash/farmhash.h
-        Cuckoo/utils/hashutil.h
-        Cuckoo/lfsr64.h
-        Cuckoo/disjointset.h
+        hash.h
+        farmhash/farmhash.h
+        utils/hashutil.h
+        utils/ClientSock.h
+        utils/json.hpp
+        utils/debugbreak.h
+        utils/common.h
+        utils/CompactArray.h
+        lfsr64.h
+        disjointset.h
+        control_plane.h
         Cuckoo/cuckoo.h
-        MyDesign.h
-        Cuckoo/utils/ClientSock.h
-        Cuckoo/utils/json.hpp
-        Cuckoo/utils/debugbreak.h
         input/input_types.h
+        network/graph.h
+        SetSep/bucket_map_to_group.h
+        Setsep/SetSep.h
+        SetSep/DataPlaneSetSep.h
+        Ludo/cuckoo_ht.h
+        Ludo/minimal_perfect_cuckoo.h
+        VacuumFilter/better_table.h
+        VacuumFilter/bitsutil.h
+        VacuumFilter/cuckoo_filter.h
+        VacuumFilter/debug.h
+        VacuumFilter/packedtable.h
+        VacuumFilter/permencoding.h
+        VacuumFilter/printutil.h
+        VacuumFilter/simd-block.h
+        VacuumFilter/singletable.h
+        VacuumFilter/vacuum_filter.h
+        SingleLudo.h
+        MultiLudo.h
+        MyDesign.h
         )
 
 add_executable(testCuckoo
