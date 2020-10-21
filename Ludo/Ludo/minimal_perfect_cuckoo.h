@@ -674,7 +674,7 @@ public:
     throw runtime_error("Cannot generate a proper hash seed within 255 tries, which is rare");
   }
 
-  void ExportToSetSep(DataPlaneSetSep<Key,bool,1> &SetMap,int fd) {
+  void ExportToSetSep(DataPlaneSetSep<Key,bool,1> *SetMap,int fd) {
     vector<Key> keys;
     vector<bool> values;
     keys.reserve(entryCount);
@@ -698,7 +698,7 @@ public:
     close(fd);
   }
 
-  void to_File(string FileName,DataPlaneSetSep<Key,bool,1> &SetMap)
+  void to_File(string FileName,DataPlaneSetSep<Key,bool,1> *SetMap)
   {
       int fd=open(FileName.c_str(),O_RDWR | O_TRUNC |O_CREAT,0777);
       if (fd==-1) Counter::count("SingleLudo fail to open file");
@@ -929,7 +929,7 @@ public:
     return bucket;
   }
 
-  inline Value readSlot(int fd,uint32_t bid, char sid) {
+    inline Value readSlot(int fd,uint32_t bid, char sid) const{
       //TODO
       Value myValue;
       pread(fd,&myValue,sizeof(Value),4+SizePerSlot*(bid*kSlotsPerBucket+sid)+sizeof(Key));
@@ -939,7 +939,7 @@ public:
   unordered_map<Key, Value> fallback;
 
   // Returns true if found.  Sets *out = value.
-  inline bool lookup(const Key &k, Value &out,const DataPlaneSetSep<Key,bool,1> &SS,int fd) const {
+   inline bool lookup(const Key &k, Value &out,const DataPlaneSetSep<Key,bool,1> &SS,int fd) const {
     if (!fallback.empty()) {
       auto it = fallback.find(k);
       if (it != fallback.end())
@@ -953,7 +953,7 @@ public:
       COMPILER_BARRIER();
       if (va1 % 2 == 1 || vb1 % 2 == 1) continue;
       
-      uint8_t Out;
+      bool Out;
       if (SS.lookup(k, Out) == false) Counter::count("SetSep Find Error");
       uint32_t BucketID=buckets[Out];
 

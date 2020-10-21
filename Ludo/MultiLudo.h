@@ -10,7 +10,7 @@ template<class Key,class Value,int MAXBITS=5,bool filter_use=true>
 class MultiLudo : public Base<Key,Value>{
     public:
     string PreFixName;
-    SingleLudo<Key,Value,MAXBITS,filter_use>* Ludo[MAX_TABLE_SIZE];
+    SingleLudo<Key,Value,MAXBITS,filter_use> *Ludo[MAX_TABLE_SIZE];
     int TABLE_NUM=0;
     bool empty_table=true;
     explicit MultiLudo()
