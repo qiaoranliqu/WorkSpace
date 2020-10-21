@@ -1,0 +1,159 @@
+In file included from ../Ludo/Cuckoo/cuckoo.h:20:0,
+                 from ../Ludo/MyDesign.h:6,
+                 from testCuckoo.cpp:5:
+../Ludo/Cuckoo/../Base.h:14:13: error: ‘unorder_map’ does not name a type
+     virtual unorder_map<Key,pair<Value,bool>,Hasher32<Key> > toMap()=0;
+             ^~~~~~~~~~~
+In file included from ../Ludo/MyDesign.h:6:0,
+                 from testCuckoo.cpp:5:
+../Ludo/Cuckoo/cuckoo.h:73:59: error: ISO C++ forbids declaration of ‘ControlPlaneCuckooMap’ with no type [-fpermissive]
+   explicit ControlPlaneCuckooMap(uint32_t num_entries = 64) {
+                                                           ^
+../Ludo/Cuckoo/cuckoo.h:73:3: error: only declarations of constructors and conversion operators can be ‘explicit’
+   explicit ControlPlaneCuckooMap(uint32_t num_entries = 64) {
+   ^~~~~~~~
+../Ludo/Cuckoo/cuckoo.h:361:77: error: expected ‘,’ or ‘...’ before ‘uint32_t’
+   inline void InsertInternal(const Key &k, const Value &v,const bool &isdel uint32_t b, int slot) {
+                                                                             ^~~~~~~~
+../Ludo/Cuckoo/cuckoo.h: In member function ‘bool CuckooMap<Key, Value, RatDown, RatScan, kCandidateBuckets, kSlotsPerBucket>::updateMapping(const Key&, Value)’:
+../Ludo/Cuckoo/cuckoo.h:201:46: error: no matching function for call to ‘count(const char [26])’
+     Counter:count("Cuckoo uncertain updating");
+                                              ^
+In file included from /usr/include/c++/7/algorithm:62:0,
+                 from testCuckoo.cpp:2:
+/usr/include/c++/7/bits/stl_algo.h:4076:5: note: candidate: template<class _IIter, class _Tp> typename std::iterator_traits<_Iterator>::difference_type std::count(_IIter, _IIter, const _Tp&)
+     count(_InputIterator __first, _InputIterator __last, const _Tp& __value)
+     ^~~~~
+/usr/include/c++/7/bits/stl_algo.h:4076:5: note:   template argument deduction/substitution failed:
+In file included from ../Ludo/MyDesign.h:6:0,
+                 from testCuckoo.cpp:5:
+../Ludo/Cuckoo/cuckoo.h:201:46: note:   candidate expects 3 arguments, 1 provided
+     Counter:count("Cuckoo uncertain updating");
+                                              ^
+../Ludo/Cuckoo/cuckoo.h: In member function ‘std::unordered_map<Key, Value, Hasher32<Key> > CuckooMap<Key, Value, RatDown, RatScan, kCandidateBuckets, kSlotsPerBucket>::toMap() const’:
+../Ludo/Cuckoo/cuckoo.h:219:105: error: ‘i’ was not declared in this scope
+           map.insert(make_pair(bucket.keys[slot], make_pair(bucket.values[slot],(bucket.deletionMask >> i) & 1)));
+                                                                                                         ^
+../Ludo/Cuckoo/cuckoo.h:230:105: error: ‘i’ was not declared in this scope
+           map.insert(make_pair(bucket.keys[slot], make_pair(bucket.values[slot],(bucket.deletionMask >> i) & 1)));
+                                                                                                         ^
+../Ludo/Cuckoo/cuckoo.h: In member function ‘void CuckooMap<Key, Value, RatDown, RatScan, kCandidateBuckets, kSlotsPerBucket>::ClearAllBits()’:
+../Ludo/Cuckoo/cuckoo.h:357:11: error: ‘buckets’ was not declared in this scope
+           buckets[i].deletionMask = 0;
+           ^~~~~~~
+../Ludo/Cuckoo/cuckoo.h:357:11: note: suggested alternative: ‘buckets_’
+           buckets[i].deletionMask = 0;
+           ^~~~~~~
+           buckets_
+../Ludo/Cuckoo/cuckoo.h: In member function ‘void CuckooMap<Key, Value, RatDown, RatScan, kCandidateBuckets, kSlotsPerBucket>::InsertInternal(const Key&, const Value&, const bool&)’:
+../Ludo/Cuckoo/cuckoo.h:362:29: error: ‘b’ was not declared in this scope
+     Bucket &bptr = buckets_[b];
+                             ^
+../Ludo/Cuckoo/cuckoo.h:363:15: error: ‘slot’ was not declared in this scope
+     bptr.keys[slot] = k;
+               ^~~~
+../Ludo/Cuckoo/cuckoo.h:363:15: note: suggested alternative: ‘sqrt’
+     bptr.keys[slot] = k;
+               ^~~~
+               sqrt
+../Ludo/Cuckoo/cuckoo.h:366:25: error: ‘bpter’ was not declared in this scope
+     bptr.deletionMask = bpter.deletionMask & (~(1U << slot)) | (isdel << slot);
+                         ^~~~~
+../Ludo/Cuckoo/cuckoo.h:366:25: note: suggested alternative: ‘bptr’
+     bptr.deletionMask = bpter.deletionMask & (~(1U << slot)) | (isdel << slot);
+                         ^~~~~
+                         bptr
+../Ludo/Cuckoo/cuckoo.h:368:34: error: ‘num_scan_’ was not declared in this scope
+     if (!scanned && entryCount > num_scan_) ClearAllBits();
+                                  ^~~~~~~~~
+../Ludo/Cuckoo/cuckoo.h:368:34: note: suggested alternative: ‘num_slot_’
+     if (!scanned && entryCount > num_scan_) ClearAllBits();
+                                  ^~~~~~~~~
+                                  num_slot_
+In file included from testCuckoo.cpp:5:0:
+../Ludo/MyDesign.h: At global scope:
+../Ludo/MyDesign.h:16:2: error: invalid use of template-name ‘Base’ without an argument list
+  Base* table[MAX_TABLE_NUM];
+  ^~~~
+../Ludo/MyDesign.h:16:2: note: class template argument deduction is only available with -std=c++1z or -std=gnu++1z
+In file included from ../Ludo/Cuckoo/cuckoo.h:20:0,
+                 from ../Ludo/MyDesign.h:6,
+                 from testCuckoo.cpp:5:
+../Ludo/Cuckoo/../Base.h:7:7: note: ‘template<class Key, class Value> class Base’ declared here
+ class Base{
+       ^~~~
+In file included from testCuckoo.cpp:5:0:
+../Ludo/MyDesign.h: In constructor ‘MyDesign<Key, Value>::MyDesign()’:
+../Ludo/MyDesign.h:29:3: error: ‘table’ was not declared in this scope
+   table[0]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
+   ^~~~~
+../Ludo/MyDesign.h:29:3: note: suggested alternative: ‘tanl’
+   table[0]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
+   ^~~~~
+   tanl
+../Ludo/MyDesign.h:29:16: error: expected type-specifier before ‘CuckooMap’
+   table[0]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
+                ^~~~~~~~~
+../Ludo/MyDesign.h:29:16: error: expected ‘;’ before ‘CuckooMap’
+../Ludo/MyDesign.h:30:16: error: expected type-specifier before ‘CuckooMap’
+   table[1]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
+                ^~~~~~~~~
+../Ludo/MyDesign.h:30:16: error: expected ‘;’ before ‘CuckooMap’
+../Ludo/MyDesign.h:32:16: error: expected type-specifier before ‘CuckooMap’
+   table[2]=new CuckooMap(DEFAULT_SIZE)<Key,Value>;
+                ^~~~~~~~~
+../Ludo/MyDesign.h:32:16: error: expected ‘;’ before ‘CuckooMap’
+../Ludo/MyDesign.h: In member function ‘uint32_t MyDesign<Key, Value>::insert(const Key&, const Value&)’:
+../Ludo/MyDesign.h:37:10: error: ‘table’ was not declared in this scope
+   STATUS=table[0].insert(Cur_Key,Cur_Val);
+          ^~~~~
+../Ludo/MyDesign.h:37:10: note: suggested alternative: ‘tanl’
+   STATUS=table[0].insert(Cur_Key,Cur_Val);
+          ^~~~~
+          tanl
+In file included from testCuckoo.cpp:5:0:
+../Ludo/MyDesign.h: In member function ‘uint32_t MyDesign<Key, Value>::erase(Key&)’:
+../Ludo/MyDesign.h:62:10: error: ‘table’ was not declared in this scope
+   STATUS=table[0].erase(Cur_Key,Cur_Val);
+          ^~~~~
+../Ludo/MyDesign.h:62:10: note: suggested alternative: ‘tanl’
+   STATUS=table[0].erase(Cur_Key,Cur_Val);
+          ^~~~~
+          tanl
+../Ludo/MyDesign.h:62:33: error: ‘Cur_Val’ was not declared in this scope
+   STATUS=table[0].erase(Cur_Key,Cur_Val);
+                                 ^~~~~~~
+../Ludo/MyDesign.h:62:33: note: suggested alternative: ‘Cur_Key’
+   STATUS=table[0].erase(Cur_Key,Cur_Val);
+                                 ^~~~~~~
+                                 Cur_Key
+../Ludo/MyDesign.h: In member function ‘uint32_t MyDesign<Key, Value>::modify(const Key&, const Value&)’:
+../Ludo/MyDesign.h:87:10: error: ‘table’ was not declared in this scope
+   STATUS=table[0].modify(Cur_Key,Cur_Val);
+          ^~~~~
+../Ludo/MyDesign.h:87:10: note: suggested alternative: ‘tanl’
+   STATUS=table[0].modify(Cur_Key,Cur_Val);
+          ^~~~~
+          tanl
+../Ludo/MyDesign.h: In member function ‘Value MyDesign<Key, Value>::lookup(const Key&)’:
+../Ludo/MyDesign.h:115:8: error: ‘table’ was not declared in this scope
+    if (table[i].lookup(Cur_Key,Cur_Value,Cur_Del)) break;
+        ^~~~~
+../Ludo/MyDesign.h:115:8: note: suggested alternative: ‘tanl’
+    if (table[i].lookup(Cur_Key,Cur_Value,Cur_Del)) break;
+        ^~~~~
+        tanl
+../Ludo/MyDesign.h:115:42: error: ‘Cur_Del’ was not declared in this scope
+    if (table[i].lookup(Cur_Key,Cur_Value,Cur_Del)) break;
+                                          ^~~~~~~
+../Ludo/MyDesign.h:115:42: note: suggested alternative: ‘Cur_del’
+    if (table[i].lookup(Cur_Key,Cur_Value,Cur_Del)) break;
+                                          ^~~~~~~
+                                          Cur_del
+../Ludo/MyDesign.h:116:7: error: ‘Cur_Del’ was not declared in this scope
+   if (Cur_Del==true)
+       ^~~~~~~
+../Ludo/MyDesign.h:116:7: note: suggested alternative: ‘Cur_del’
+   if (Cur_Del==true)
+       ^~~~~~~
+       Cur_del

@@ -81,76 +81,76 @@ CMakeFiles/testCuckoo.dir/common.cpp.o.provides: CMakeFiles/testCuckoo.dir/commo
 CMakeFiles/testCuckoo.dir/common.cpp.o.provides.build: CMakeFiles/testCuckoo.dir/common.cpp.o
 
 
-CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o: CMakeFiles/testCuckoo.dir/flags.make
-CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o: ../Cuckoo/farmhash/farmhash.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/altria/WorkSpace/Ludo/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o"
-	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o -c /home/altria/WorkSpace/Ludo/Cuckoo/farmhash/farmhash.cc
+CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o: CMakeFiles/testCuckoo.dir/flags.make
+CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o: ../farmhash/farmhash.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/altria/WorkSpace/Ludo/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o"
+	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o -c /home/altria/WorkSpace/Ludo/farmhash/farmhash.cc
 
-CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/altria/WorkSpace/Ludo/Cuckoo/farmhash/farmhash.cc > CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.i
+CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.i"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/altria/WorkSpace/Ludo/farmhash/farmhash.cc > CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.i
 
-CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/altria/WorkSpace/Ludo/Cuckoo/farmhash/farmhash.cc -o CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.s
+CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.s"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/altria/WorkSpace/Ludo/farmhash/farmhash.cc -o CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.s
 
-CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o.requires:
+CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o.requires:
 
-.PHONY : CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o.requires
+.PHONY : CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o.requires
 
-CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o.provides: CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o.requires
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o.provides.build
-.PHONY : CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o.provides
+CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o.provides: CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o.requires
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o.provides.build
+.PHONY : CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o.provides
 
-CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o.provides.build: CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o
-
-
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o: CMakeFiles/testCuckoo.dir/flags.make
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o: ../Cuckoo/utils/ClientSock.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/altria/WorkSpace/Ludo/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o"
-	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o -c /home/altria/WorkSpace/Ludo/Cuckoo/utils/ClientSock.cpp
-
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/altria/WorkSpace/Ludo/Cuckoo/utils/ClientSock.cpp > CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.i
-
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/altria/WorkSpace/Ludo/Cuckoo/utils/ClientSock.cpp -o CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.s
-
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o.requires:
-
-.PHONY : CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o.requires
-
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o.provides: CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o.requires
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o.provides.build
-.PHONY : CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o.provides
-
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o.provides.build: CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o
+CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o.provides.build: CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o
 
 
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o: CMakeFiles/testCuckoo.dir/flags.make
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o: ../Cuckoo/utils/hashutil.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/altria/WorkSpace/Ludo/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o"
-	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o -c /home/altria/WorkSpace/Ludo/Cuckoo/utils/hashutil.cc
+CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o: CMakeFiles/testCuckoo.dir/flags.make
+CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o: ../utils/ClientSock.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/altria/WorkSpace/Ludo/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o"
+	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o -c /home/altria/WorkSpace/Ludo/utils/ClientSock.cpp
 
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/altria/WorkSpace/Ludo/Cuckoo/utils/hashutil.cc > CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.i
+CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.i"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/altria/WorkSpace/Ludo/utils/ClientSock.cpp > CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.i
 
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/altria/WorkSpace/Ludo/Cuckoo/utils/hashutil.cc -o CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.s
+CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.s"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/altria/WorkSpace/Ludo/utils/ClientSock.cpp -o CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.s
 
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o.requires:
+CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o.requires:
 
-.PHONY : CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o.requires
+.PHONY : CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o.requires
 
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o.provides: CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o.requires
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o.provides.build
-.PHONY : CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o.provides
+CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o.provides: CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o.requires
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o.provides.build
+.PHONY : CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o.provides
 
-CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o.provides.build: CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o
+CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o.provides.build: CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o
+
+
+CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o: CMakeFiles/testCuckoo.dir/flags.make
+CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o: ../utils/hashutil.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/altria/WorkSpace/Ludo/release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o"
+	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o -c /home/altria/WorkSpace/Ludo/utils/hashutil.cc
+
+CMakeFiles/testCuckoo.dir/utils/hashutil.cc.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/testCuckoo.dir/utils/hashutil.cc.i"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/altria/WorkSpace/Ludo/utils/hashutil.cc > CMakeFiles/testCuckoo.dir/utils/hashutil.cc.i
+
+CMakeFiles/testCuckoo.dir/utils/hashutil.cc.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/testCuckoo.dir/utils/hashutil.cc.s"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/altria/WorkSpace/Ludo/utils/hashutil.cc -o CMakeFiles/testCuckoo.dir/utils/hashutil.cc.s
+
+CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o.requires:
+
+.PHONY : CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o.requires
+
+CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o.provides: CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o.requires
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o.provides.build
+.PHONY : CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o.provides
+
+CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o.provides.build: CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o
 
 
 CMakeFiles/testCuckoo.dir/input/input_types.cpp.o: CMakeFiles/testCuckoo.dir/flags.make
@@ -204,9 +204,9 @@ CMakeFiles/testCuckoo.dir/testCuckoo.cpp.o.provides.build: CMakeFiles/testCuckoo
 # Object files for target testCuckoo
 testCuckoo_OBJECTS = \
 "CMakeFiles/testCuckoo.dir/common.cpp.o" \
-"CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o" \
-"CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o" \
-"CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o" \
+"CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o" \
+"CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o" \
+"CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o" \
 "CMakeFiles/testCuckoo.dir/input/input_types.cpp.o" \
 "CMakeFiles/testCuckoo.dir/testCuckoo.cpp.o"
 
@@ -214,9 +214,9 @@ testCuckoo_OBJECTS = \
 testCuckoo_EXTERNAL_OBJECTS =
 
 testCuckoo: CMakeFiles/testCuckoo.dir/common.cpp.o
-testCuckoo: CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o
-testCuckoo: CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o
-testCuckoo: CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o
+testCuckoo: CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o
+testCuckoo: CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o
+testCuckoo: CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o
 testCuckoo: CMakeFiles/testCuckoo.dir/input/input_types.cpp.o
 testCuckoo: CMakeFiles/testCuckoo.dir/testCuckoo.cpp.o
 testCuckoo: CMakeFiles/testCuckoo.dir/build.make
@@ -231,9 +231,9 @@ CMakeFiles/testCuckoo.dir/build: testCuckoo
 .PHONY : CMakeFiles/testCuckoo.dir/build
 
 CMakeFiles/testCuckoo.dir/requires: CMakeFiles/testCuckoo.dir/common.cpp.o.requires
-CMakeFiles/testCuckoo.dir/requires: CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o.requires
-CMakeFiles/testCuckoo.dir/requires: CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o.requires
-CMakeFiles/testCuckoo.dir/requires: CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o.requires
+CMakeFiles/testCuckoo.dir/requires: CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o.requires
+CMakeFiles/testCuckoo.dir/requires: CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o.requires
+CMakeFiles/testCuckoo.dir/requires: CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o.requires
 CMakeFiles/testCuckoo.dir/requires: CMakeFiles/testCuckoo.dir/input/input_types.cpp.o.requires
 CMakeFiles/testCuckoo.dir/requires: CMakeFiles/testCuckoo.dir/testCuckoo.cpp.o.requires
 

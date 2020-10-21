@@ -60,7 +60,6 @@ set(HEADER_FILES
         utils/json.hpp
         utils/debugbreak.h
         utils/common.h
-        utils/CompactArray.h
         lfsr64.h
         disjointset.h
         control_plane.h

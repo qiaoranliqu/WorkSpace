@@ -123,87 +123,6 @@ testCuckoo/fast:
 	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/build
 .PHONY : testCuckoo/fast
 
-Cuckoo/farmhash/farmhash.o: Cuckoo/farmhash/farmhash.cc.o
-
-.PHONY : Cuckoo/farmhash/farmhash.o
-
-# target to build an object file
-Cuckoo/farmhash/farmhash.cc.o:
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.o
-.PHONY : Cuckoo/farmhash/farmhash.cc.o
-
-Cuckoo/farmhash/farmhash.i: Cuckoo/farmhash/farmhash.cc.i
-
-.PHONY : Cuckoo/farmhash/farmhash.i
-
-# target to preprocess a source file
-Cuckoo/farmhash/farmhash.cc.i:
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.i
-.PHONY : Cuckoo/farmhash/farmhash.cc.i
-
-Cuckoo/farmhash/farmhash.s: Cuckoo/farmhash/farmhash.cc.s
-
-.PHONY : Cuckoo/farmhash/farmhash.s
-
-# target to generate assembly for a file
-Cuckoo/farmhash/farmhash.cc.s:
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/farmhash/farmhash.cc.s
-.PHONY : Cuckoo/farmhash/farmhash.cc.s
-
-Cuckoo/utils/ClientSock.o: Cuckoo/utils/ClientSock.cpp.o
-
-.PHONY : Cuckoo/utils/ClientSock.o
-
-# target to build an object file
-Cuckoo/utils/ClientSock.cpp.o:
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.o
-.PHONY : Cuckoo/utils/ClientSock.cpp.o
-
-Cuckoo/utils/ClientSock.i: Cuckoo/utils/ClientSock.cpp.i
-
-.PHONY : Cuckoo/utils/ClientSock.i
-
-# target to preprocess a source file
-Cuckoo/utils/ClientSock.cpp.i:
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.i
-.PHONY : Cuckoo/utils/ClientSock.cpp.i
-
-Cuckoo/utils/ClientSock.s: Cuckoo/utils/ClientSock.cpp.s
-
-.PHONY : Cuckoo/utils/ClientSock.s
-
-# target to generate assembly for a file
-Cuckoo/utils/ClientSock.cpp.s:
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/utils/ClientSock.cpp.s
-.PHONY : Cuckoo/utils/ClientSock.cpp.s
-
-Cuckoo/utils/hashutil.o: Cuckoo/utils/hashutil.cc.o
-
-.PHONY : Cuckoo/utils/hashutil.o
-
-# target to build an object file
-Cuckoo/utils/hashutil.cc.o:
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.o
-.PHONY : Cuckoo/utils/hashutil.cc.o
-
-Cuckoo/utils/hashutil.i: Cuckoo/utils/hashutil.cc.i
-
-.PHONY : Cuckoo/utils/hashutil.i
-
-# target to preprocess a source file
-Cuckoo/utils/hashutil.cc.i:
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.i
-.PHONY : Cuckoo/utils/hashutil.cc.i
-
-Cuckoo/utils/hashutil.s: Cuckoo/utils/hashutil.cc.s
-
-.PHONY : Cuckoo/utils/hashutil.s
-
-# target to generate assembly for a file
-Cuckoo/utils/hashutil.cc.s:
-	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/Cuckoo/utils/hashutil.cc.s
-.PHONY : Cuckoo/utils/hashutil.cc.s
-
 common.o: common.cpp.o
 
 .PHONY : common.o
@@ -230,6 +149,33 @@ common.s: common.cpp.s
 common.cpp.s:
 	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/common.cpp.s
 .PHONY : common.cpp.s
+
+farmhash/farmhash.o: farmhash/farmhash.cc.o
+
+.PHONY : farmhash/farmhash.o
+
+# target to build an object file
+farmhash/farmhash.cc.o:
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.o
+.PHONY : farmhash/farmhash.cc.o
+
+farmhash/farmhash.i: farmhash/farmhash.cc.i
+
+.PHONY : farmhash/farmhash.i
+
+# target to preprocess a source file
+farmhash/farmhash.cc.i:
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.i
+.PHONY : farmhash/farmhash.cc.i
+
+farmhash/farmhash.s: farmhash/farmhash.cc.s
+
+.PHONY : farmhash/farmhash.s
+
+# target to generate assembly for a file
+farmhash/farmhash.cc.s:
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/farmhash/farmhash.cc.s
+.PHONY : farmhash/farmhash.cc.s
 
 input/input_types.o: input/input_types.cpp.o
 
@@ -285,6 +231,60 @@ testCuckoo.cpp.s:
 	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/testCuckoo.cpp.s
 .PHONY : testCuckoo.cpp.s
 
+utils/ClientSock.o: utils/ClientSock.cpp.o
+
+.PHONY : utils/ClientSock.o
+
+# target to build an object file
+utils/ClientSock.cpp.o:
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.o
+.PHONY : utils/ClientSock.cpp.o
+
+utils/ClientSock.i: utils/ClientSock.cpp.i
+
+.PHONY : utils/ClientSock.i
+
+# target to preprocess a source file
+utils/ClientSock.cpp.i:
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.i
+.PHONY : utils/ClientSock.cpp.i
+
+utils/ClientSock.s: utils/ClientSock.cpp.s
+
+.PHONY : utils/ClientSock.s
+
+# target to generate assembly for a file
+utils/ClientSock.cpp.s:
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/utils/ClientSock.cpp.s
+.PHONY : utils/ClientSock.cpp.s
+
+utils/hashutil.o: utils/hashutil.cc.o
+
+.PHONY : utils/hashutil.o
+
+# target to build an object file
+utils/hashutil.cc.o:
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/utils/hashutil.cc.o
+.PHONY : utils/hashutil.cc.o
+
+utils/hashutil.i: utils/hashutil.cc.i
+
+.PHONY : utils/hashutil.i
+
+# target to preprocess a source file
+utils/hashutil.cc.i:
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/utils/hashutil.cc.i
+.PHONY : utils/hashutil.cc.i
+
+utils/hashutil.s: utils/hashutil.cc.s
+
+.PHONY : utils/hashutil.s
+
+# target to generate assembly for a file
+utils/hashutil.cc.s:
+	$(MAKE) -f CMakeFiles/testCuckoo.dir/build.make CMakeFiles/testCuckoo.dir/utils/hashutil.cc.s
+.PHONY : utils/hashutil.cc.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -294,24 +294,24 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... testCuckoo"
 	@echo "... edit_cache"
-	@echo "... Cuckoo/farmhash/farmhash.o"
-	@echo "... Cuckoo/farmhash/farmhash.i"
-	@echo "... Cuckoo/farmhash/farmhash.s"
-	@echo "... Cuckoo/utils/ClientSock.o"
-	@echo "... Cuckoo/utils/ClientSock.i"
-	@echo "... Cuckoo/utils/ClientSock.s"
-	@echo "... Cuckoo/utils/hashutil.o"
-	@echo "... Cuckoo/utils/hashutil.i"
-	@echo "... Cuckoo/utils/hashutil.s"
 	@echo "... common.o"
 	@echo "... common.i"
 	@echo "... common.s"
+	@echo "... farmhash/farmhash.o"
+	@echo "... farmhash/farmhash.i"
+	@echo "... farmhash/farmhash.s"
 	@echo "... input/input_types.o"
 	@echo "... input/input_types.i"
 	@echo "... input/input_types.s"
 	@echo "... testCuckoo.o"
 	@echo "... testCuckoo.i"
 	@echo "... testCuckoo.s"
+	@echo "... utils/ClientSock.o"
+	@echo "... utils/ClientSock.i"
+	@echo "... utils/ClientSock.s"
+	@echo "... utils/hashutil.o"
+	@echo "... utils/hashutil.i"
+	@echo "... utils/hashutil.s"
 .PHONY : help
 
 

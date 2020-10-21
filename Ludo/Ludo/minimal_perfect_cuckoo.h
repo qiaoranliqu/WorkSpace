@@ -929,7 +929,7 @@ public:
     return bucket;
   }
 
-  inline Value readSlot(int fd,uint32_t bid, char sid) {
+  inline Value readSlot(int fd,uint32_t bid, char sid) const{
       //TODO
       Value myValue;
       pread(fd,&myValue,sizeof(Value),4+SizePerSlot*(bid*kSlotsPerBucket+sid)+sizeof(Key));
@@ -953,7 +953,7 @@ public:
       COMPILER_BARRIER();
       if (va1 % 2 == 1 || vb1 % 2 == 1) continue;
       
-      uint8_t Out;
+      bool Out;
       if (SS.lookup(k, Out) == false) Counter::count("SetSep Find Error");
       uint32_t BucketID=buckets[Out];
 
