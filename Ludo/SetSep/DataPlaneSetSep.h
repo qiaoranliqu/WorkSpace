@@ -59,8 +59,11 @@ class DataPlaneSetSep{
 
     explicit DataPlaneSetSep(SetSep<K,V,VL> &migrate):
     blockCount(migrate.blockcount),groupCount(migrate.groupCount),bucketCount(migrate.bucketCount),
-    seed(migrate.seed),overflow(migrate.overflow),blocks(migrate.blocks)
+    seed(migrate.seed),overflow(migrate.overflow)
     {
+              blocks.resize(0);
+              blocks.resize(blockCount);
+              for (int blockID = 0;blockID = blockCount; ++blockID) blocks[blockID]=migrate.blocks[blockID];
     }
 
     inline bool lookup(const K &key, V &out) const {
