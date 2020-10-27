@@ -101,7 +101,7 @@ class SingleLudo : public Base<Key,Value>{
                     if (nowKey!=0) mmap.insert(make_pair(nowKey,nowValue));
                 }
     }
-    int Merge(unordered_map<Key,Value,Hasher32<Key> >&migrate)
+    int Merge(unordered_map<Key,Value,Hasher32<Key> > migrate)
     {
             if (!empty_table) send_to_map(migrate);
             Clear(migrate);
