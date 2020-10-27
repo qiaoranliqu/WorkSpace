@@ -44,11 +44,11 @@ class MultiLudo : public Base<Key,Value>{
             unordered_map<Key,Value,Hasher32<Key> > mmap;
             for (int i=TABLE_NUM-1;i>=0;++i)
             {
-                unordered_map<Key,Value,Hasher32<Key> >tmpmap=Ludo[i].toMap();
+                unordered_map<Key,Value,Hasher32<Key> >tmpmap=Ludo[i]->toMap();
                 auto it=tmpmap.begin();
                 while (it!=tmpmap.end())
                 {
-                        if (mmap.find(it->fi)==mmap.end()) mmap[it->fi]=it->se;
+                        if (mmap.find(it->first)==mmap.end()) mmap[it->first]=it->second;
                         ++it;
                 }
             }

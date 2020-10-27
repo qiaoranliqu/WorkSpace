@@ -233,12 +233,19 @@ public:
     }
   }
 
+  uint32_t num_buckets;
+
+  uint32_t getBucketSize()
+  {
+    return num_buckets;
+  }
+
   void Clear(uint32_t num_entries) {
     entryCount = 0;
     h.setSeed(rand());
 
     num_entries /= kLoadFactor;
-    uint32_t num_buckets = (num_entries + kSlotsPerBucket - 1) / kSlotsPerBucket;
+    num_buckets = (num_entries + kSlotsPerBucket - 1) / kSlotsPerBucket;
     // Very small cuckoo tables don't work, because the probability
     // of having same-bucket hashes is large.  We compromise for those
     // uses by having a larger static starting size.
@@ -614,7 +621,9 @@ public:
       if (success) {
         if (fd!=-1)
         {
-          uint8_t ResID[kSlotsPerBucket]={-1};
+          uint8_t ResID[kSlotsPerBucket];
+	  for (int slot = 0; slot < kSlotsPerBucket; ++slot)
+		  ResID[slot]=-1;
           for (char slot = 0; slot < kSlotsPerBucket; ++slot) {
             if (bucket.occupiedMask & (1 << slot)) {
               uint8_t i = uint8_t(h(bucket.keys[slot]) >> 62);
@@ -693,7 +702,7 @@ public:
         }
       }
     }
-    SetMap=new DataPlaneSetSep<Key,bool,1>(new SetSep<Key,bool,1>(keys.size(),true,keys,values));
+    SetMap=new DataPlaneSetSep<Key,bool,1>(*(new SetSep<Key,bool,1>(keys.size(),true,keys,values)));
     pwrite(fd,LogBuff,LogBufferOffset,logFileOffset);
     close(fd);
   }
@@ -929,12 +938,7 @@ public:
     return bucket;
   }
 
-<<<<<<< HEAD
   inline Value readSlot(int fd,uint32_t bid, char sid) const{
-=======
-    inline Value readSlot(int fd,uint32_t bid, char sid) const{
->>>>>>> b4e2e3f0d7af9c891404a69a41cbe3147369d648
-      //TODO
       Value myValue;
       pread(fd,&myValue,sizeof(Value),4+SizePerSlot*(bid*kSlotsPerBucket+sid)+sizeof(Key));
       return myValue;
@@ -943,7 +947,7 @@ public:
   unordered_map<Key, Value> fallback;
 
   // Returns true if found.  Sets *out = value.
-   inline bool lookup(const Key &k, Value &out,const DataPlaneSetSep<Key,bool,1> &SS,int fd) const {
+   inline bool lookup(const Key &k, Value &out,const DataPlaneSetSep<Key,bool,1> *SS,int fd) const {
     if (!fallback.empty()) {
       auto it = fallback.find(k);
       if (it != fallback.end())
@@ -958,7 +962,7 @@ public:
       if (va1 % 2 == 1 || vb1 % 2 == 1) continue;
       
       bool Out;
-      if (SS.lookup(k, Out) == false) Counter::count("SetSep Find Error");
+      if (SS->lookup(k, Out) == false) Counter::count("SetSep Find Error");
       uint32_t BucketID=buckets[Out];
 
       Bucket bucket = readBucket(BucketID);

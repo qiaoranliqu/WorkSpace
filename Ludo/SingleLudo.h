@@ -100,7 +100,6 @@ class SingleLudo : public Base<Key,Value>{
                     if (read(fd,&nowValue,sizeof(nowValue))!=sizeof(nowValue)) Counter::count("SingleLudo value error");
                     if (nowKey!=0) mmap.insert(make_pair(nowKey,nowValue));
                 }
-            return mmap;
     }
     int Merge(unordered_map<Key,Value,Hasher32<Key> >&migrate)
     {
