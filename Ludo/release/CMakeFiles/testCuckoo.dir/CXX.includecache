@@ -529,6 +529,8 @@ bucket_map_to_group.h
 /home/altria/WorkSpace/Ludo/SetSep/bucket_map_to_group.h
 
 /home/altria/WorkSpace/Ludo/SingleLudo.h
+iostream
+-
 Base.h
 /home/altria/WorkSpace/Ludo/Base.h
 common.h

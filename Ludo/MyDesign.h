@@ -41,7 +41,7 @@ class MyDesign{
 		table[0]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
 		table[1]=new MultiLudo<Key,Value>("SecondLayer");
 		table[2]=new SingleLudo<Key,Value>("ThirdLayer");
-		fd=open(LogFile.c_str(),O_RDWR | O_APPEND | O_CREAT,0777);
+		fd=open(LogFile.c_str(),O_RDWR | O_CREAT | O_TRUNC,0777);
 //		fsync(fd);
 		close(fd);
 //		table[2]=new SingleLudo();
@@ -59,13 +59,12 @@ class MyDesign{
 			memcpy(LogBuff+LogBufferOffset,k+kOffset,toWrite);
 			LogBufferOffset=0;
 			kOffset+=toWrite;
-			fprintf(stderr,"%d\n",logFileOffset);
 			pwrite(fd,LogBuff,4096,logFileOffset);
 			logFileOffset+=4096;
 		}
 		if (logFileOffset > logFileSize)
 		{
-			 Counter::count("Desgin fail logFile is too large");
+			 Counter::count("Design fail logFile is too large");
 			 return;
 		}
 		int toWrite=klen-kOffset;
@@ -77,12 +76,13 @@ class MyDesign{
 	{
 		int tmplength=0;
 		strncpy(TempBuff,Cur_Type.c_str(),Cur_Type.length()); tmplength+=Cur_Type.length();
-		strncpy(TempBuff+tmplength,(char*)&Cur_Key,sizeof(Key)*8); tmplength+=sizeof(Key)*8;
-		strncpy(TempBuff+tmplength,(char*)&Cur_Value,sizeof(Value)*8); tmplength+=sizeof(Value)*8;
+		strncpy(TempBuff+tmplength,(char*)&Cur_Key,sizeof(Key)); tmplength+=sizeof(Key);
+		strncpy(TempBuff+tmplength,(char*)&Cur_Value,sizeof(Value)); tmplength+=sizeof(Value);
 		appendLog(TempBuff,tmplength);
 	}
 	uint32_t insert(const Key& Cur_Key,const Value& Cur_Val)
 	{
+//		fprintf(stderr,"insertlog\n");
 		Insert_Log("i",Cur_Key,Cur_Val);
 		STATUS=table[0]->insert(Cur_Key,Cur_Val);
 		if (STATUS==OK) return OK;
@@ -161,15 +161,21 @@ class MyDesign{
 	}
 	Value lookup(const Key& Cur_Key)
 	{
+//		fprintf(stderr,"lookuplog\n");
 		Insert_Log("l",Cur_Key,0);
 		int i;
 		Value Cur_Value;
 		for (i=0;i<TABLE_NUM;++i)
-			if (table[i]->lookup(Cur_Key,Cur_Value)) break;
+		{
+//			fprintf(stderr,"TABLE[%d] lookup\n",i);
+			if (table[i]->lookup(Cur_Key,Cur_Value)==OK) break;
+		}
 		if (Cur_Value==-1) 
-			Counter::count("Cuckoo Error the key is deleted");
+			Counter::count("Cuckoo Error the key is deleted"),puts("None key matches!");
+		else 
 		if (i==TABLE_NUM)
-			Counter::count("Cuckoo Error never find the key");
+			Counter::count("Cuckoo Error never find the key"),puts("None key matches!");
+//		if (Cur_Value==0) fprintf(stderr,"%d %d\n",Cur_Key,i);
 		return Cur_Value;
 	}
 };

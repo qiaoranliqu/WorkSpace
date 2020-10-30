@@ -568,15 +568,15 @@ public:
 	void appendLog(int fd,char* k,int klen)
 	{
     int kOffset=0;
-		while (LogBufferOffset+(klen-kOffset)>=4096)
+		while (LogBufferOffset+(klen-kOffset)>=MAX_BUFF_SIZE)
 		{
-      int toWrite=4096-LogBufferOffset;
+      int toWrite=MAX_BUFF_SIZE-LogBufferOffset;
 			memcpy(LogBuff+LogBufferOffset,k+kOffset,toWrite);
 			LogBufferOffset=0;
 			kOffset+=toWrite;
 //			fprintf(stderr,"%d\n",logFileOffset);
-			pwrite(fd,LogBuff,4096,logFileOffset);
-			logFileOffset+=4096;
+			pwrite(fd,LogBuff,MAX_BUFF_SIZE,logFileOffset);
+			logFileOffset+=MAX_BUFF_SIZE;
 		}
     /*
 		if (logFileOffset > logFileSize)
@@ -588,12 +588,16 @@ public:
 		int toWrite=klen-kOffset;
 		memcpy(LogBuff+LogBufferOffset,k+kOffset,toWrite);
 		LogBufferOffset+=toWrite;
+  //  fprintf(stderr,"%d\n",LogBufferOffset);
 	}
   template<typename T>
-	void WriteIntoFile(int fd,T Cur_Value)
+	void WriteIntoFile(int fd,const T &Cur_Value)
 	{
-		strncpy(TempBuff,(char*)&Cur_Value,sizeof(T)*8);
-		appendLog(fd,TempBuff,sizeof(T)*8);
+    for (int id = 0;id < sizeof(T); ++id)
+      TempBuff[id] = *(((char*)&Cur_Value)+id);
+		//strncpy(TempBuff,(char*)&Cur_Value,sizeof(T));
+//    fprintf(stderr,"%d\n",sizeof(T));
+		appendLog(fd,TempBuff,sizeof(T));
 	}
 
   uint8_t updateSeed(uint32_t bktIdx, uint8_t *dpSlotMove = 0, char slotWithNewKey = -1,int fd=-1) {
@@ -622,18 +626,20 @@ public:
         if (fd!=-1)
         {
           uint8_t ResID[kSlotsPerBucket];
-	  for (int slot = 0; slot < kSlotsPerBucket; ++slot)
-		  ResID[slot]=-1;
+	        for (char slot = 0; slot < kSlotsPerBucket; ++slot) ResID[slot]=kSlotsPerBucket;
           for (char slot = 0; slot < kSlotsPerBucket; ++slot) {
             if (bucket.occupiedMask & (1 << slot)) {
               uint8_t i = uint8_t(h(bucket.keys[slot]) >> 62);
               ResID[i]=slot;
             }
           }
+ //         fprintf(stderr,"%d\n",bucket.occupiedMask);
           for (char slot = 0; slot < kSlotsPerBucket; ++slot) {
-            if (ResID[slot]==-1) WriteIntoFile<Key>(fd,(Key)0),WriteIntoFile<Value>(fd,(Value)0);
+            if (ResID[slot]==kSlotsPerBucket) WriteIntoFile<Key>(fd,(Key)0),WriteIntoFile<Value>(fd,(Value)0);//,fprintf(stderr,"%u,%u ",0,0);
             else WriteIntoFile<Key>(fd,bucket.keys[ResID[slot]]),WriteIntoFile<Value>(fd,bucket.values[ResID[slot]]);
+            //,fprintf(stderr,"%u,%u ",bucket.keys[ResID[slot]],bucket.values[ResID[slot]]);
           }
+          //fprintf(stderr,"\n");
         }
         bool withDp = dpSlotMove != nullptr;
 
@@ -683,7 +689,7 @@ public:
     throw runtime_error("Cannot generate a proper hash seed within 255 tries, which is rare");
   }
 
-  void ExportToSetSep(DataPlaneSetSep<Key,bool,1> *SetMap,int fd) {
+  void ExportToSetSep(DataPlaneSetSep<Key,bool,1> *&SetMap,int fd) {
     vector<Key> keys;
     vector<bool> values;
     keys.reserve(entryCount);
@@ -704,16 +710,17 @@ public:
     }
     SetMap=new DataPlaneSetSep<Key,bool,1>(*(new SetSep<Key,bool,1>(keys.size(),true,keys,values)));
     pwrite(fd,LogBuff,LogBufferOffset,logFileOffset);
-    close(fd);
   }
 
-  void to_File(string FileName,DataPlaneSetSep<Key,bool,1> *SetMap)
+  void to_File(string FileName,DataPlaneSetSep<Key,bool,1> *&SetMap)
   {
       int fd=open(FileName.c_str(),O_RDWR | O_TRUNC |O_CREAT,0777);
-      if (fd==-1) Counter::count("SingleLudo fail to open file");
+      if (fd==-1) Counter::count("SingleLudo fail to open file"),fprintf(stderr,"NAMO\n");
+      else fprintf(stderr,"Good open!\n");
       uint32_t Offset=0;
       WriteIntoFile<int>(fd,(int)buckets_.size());
       ExportToSetSep(SetMap,fd);
+      close(fd);
   }
 
   Bucket getDpBucket(uint32_t index) const {
@@ -815,7 +822,7 @@ class DataPlaneMinimalPerfectCuckoo {
   static const uint64_t DigestMask = ((1ULL << DL) - 1) << VL;
   static const uint64_t VDMask = (1ULL << (VL + DL)) - 1;
 
-  static constexpr uint64_t SizePerSlot=(sizeof(Key)<<3)+VL;
+  static constexpr uint64_t SizePerSlot=sizeof(Key)+sizeof(Value);
 
 public:
   FastHasher64<Key> h;
@@ -938,16 +945,23 @@ public:
     return bucket;
   }
 
-  inline Value readSlot(int fd,uint32_t bid, char sid) const{
-      Value myValue;
-      pread(fd,&myValue,sizeof(Value),4+SizePerSlot*(bid*kSlotsPerBucket+sid)+sizeof(Key));
-      return myValue;
+  inline bool readSlot(int fd,uint32_t bid, char sid,const Key &key,Value &value) const{
+      Key MyKey;
+      pread(fd,&MyKey,sizeof(Key),4+SizePerSlot*(bid*kSlotsPerBucket+sid));
+      if (MyKey!=key) 
+      {
+ //       fprintf(stderr,"false positive found!\n");
+        return false;
+      }
+      pread(fd,&value,sizeof(Value),4+SizePerSlot*(bid*kSlotsPerBucket+sid)+sizeof(Key));
+      return true;
   }
 
   unordered_map<Key, Value> fallback;
 
   // Returns true if found.  Sets *out = value.
    inline bool lookup(const Key &k, Value &out,const DataPlaneSetSep<Key,bool,1> *SS,int fd) const {
+  // fprintf(stderr,"Start Ludo lookup\n");
     if (!fallback.empty()) {
       auto it = fallback.find(k);
       if (it != fallback.end())
@@ -962,7 +976,9 @@ public:
       if (va1 % 2 == 1 || vb1 % 2 == 1) continue;
       
       bool Out;
-      if (SS->lookup(k, Out) == false) Counter::count("SetSep Find Error");
+  //    fprintf(stderr,"%d\n",SS);
+      if (SS->lookup(k, Out) == false) Counter::count("SetSep Find Error"),fprintf(stderr,"SetSep Error!\n");
+ //     fprintf(stderr,"Goog Find in Setsep for out=%d\n",Out);
       uint32_t BucketID=buckets[Out];
 
       Bucket bucket = readBucket(BucketID);
@@ -973,7 +989,8 @@ public:
       if (va1 != va2 || vb1 != vb2) continue;
 
       uint64_t i = FastHasher64<Key>(bucket.seed)(k) >> 62;
-      Value result = readSlot(fd,BucketID,i);
+      Value result ;
+      if (!readSlot(fd,BucketID,i,k,result)) return false;
 
       if ((result & DigestMask) == ((digestH(k) << VL) & DigestMask)) {
         out = result & ValueMask;

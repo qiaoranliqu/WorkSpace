@@ -54,16 +54,27 @@ class DataPlaneSetSep{
 
     explicit DataPlaneSetSep()
     {
-            Counter::count("SetSep Build ERROR");
+      Counter::count("SetSep Build ERROR");
     }
 
     explicit DataPlaneSetSep(SetSep<K,V,VL> &migrate):
-    blockCount(migrate.blockcount),groupCount(migrate.groupCount),bucketCount(migrate.bucketCount),
+    blockCount(migrate.blockCount),groupCount(migrate.groupCount),bucketCount(migrate.bucketCount),
     seed(migrate.seed),overflow(migrate.overflow)
     {
-              blocks.resize(0);
-              blocks.resize(blockCount);
-              for (int blockID = 0;blockID = blockCount; ++blockID) blocks[blockID]=migrate.blocks[blockID];
+      blocks.resize(0);
+      blocks.resize(blockCount);
+      for (int blockID = 0;blockID < blockCount; ++blockID)
+      {
+        for (int groupID = 0;groupID < 64; ++groupID)
+        {
+          blocks[blockID].bucketMap[groupID] = migrate.blocks[blockID].bucketMap[groupID];
+          for (int VLID = 0;VLID < VL; ++VLID)
+          {
+            blocks[blockID].groups[groupID].seeds[VLID] = migrate.blocks[blockID].groups[groupID].seeds[VLID];
+            blocks[blockID].groups[groupID].bitmaps[VLID] = migrate.blocks[blockID].groups[groupID].bitmaps[VLID];
+          }
+        }
+      }
     }
 
     inline bool lookup(const K &key, V &out) const {

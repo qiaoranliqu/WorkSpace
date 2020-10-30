@@ -91,6 +91,16 @@ add_executable(testCuckoo
         ${COMMON_SOURCE_FILES}
         testCuckoo.cpp)
 
+add_executable(bl
+        ${HEADER_FILES}
+        ${COMMON_SOURCE_FILES}
+        bl.cpp)
+
+add_executable(mkdata
+        ${HEADER_FILES}
+        ${COMMON_SOURCE_FILES}
+        mkdata.cpp)
+
 IF (APPLE)
     set(CMAKE_THREAD_LIBS_INIT "-lpthread")
     set(CMAKE_HAVE_THREADS_LIBRARY 1)
@@ -101,17 +111,27 @@ ELSE ()
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
     target_link_libraries(testCuckoo Threads::Threads)
+    target_link_libraries(bl Threads::Threads)
+    target_link_libraries(mkdata Threads::Threads)
 ENDIF ()
 
 
 set(Gperftools_DIR "${CMAKE_CURRENT_LIST_DIR}/cmake/")
 find_package(Gperftools REQUIRED)
 target_link_libraries(testCuckoo ${GPERFTOOLS_PROFILER})
+target_link_libraries(bl ${GPERFTOOLS_PROFILER})
+target_link_libraries(mkdata ${GPERFTOOLS_PROFILER})
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(OPENSSL REQUIRED openssl)
 target_link_libraries(testCuckoo ${OPENSSL_LIBRARIES})
+target_link_libraries(bl ${OPENSSL_LIBRARIES})
+target_link_libraries(mkdata ${OPENSSL_LIBRARIES})
 
 #TARGET_LINK_LIBRARIES(testCuckoo LINK_PUBLIC ${Boost_LIBRARIES})
+#TARGET_LINK_LIBRARIES(mkdata LINK_PUBLIC ${Boost_LIBRARIES})
+#TARGET_LINK_LIBRARIES(bl LINK_PUBLIC ${Boost_LIBRARIES})
 
 #TARGET_LINK_LIBRARIES(testCuckoo cmph)
+#TARGET_LINK_LIBRARIES(mkdata cmph)
+#TARGET_LINK_LIBRARIES(bl cmph)

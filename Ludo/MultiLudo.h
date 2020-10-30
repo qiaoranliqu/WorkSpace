@@ -35,14 +35,20 @@ class MultiLudo : public Base<Key,Value>{
     }
     int lookup(const Key &k,Value &out)
     {
+//        fprintf(stderr,"Start lookup\n");
+//        fprintf(stderr,"%d %d\n",TABLE_NUM,Ludo[0]);
         for (int i=TABLE_NUM-1;i>=0;--i)
-            if (Ludo[i]->lookup(k,out)==true) return OK;
+            if (Ludo[i]->lookup(k,out)==OK)   
+            {
+                return OK;
+            }
+        fprintf(stderr,"tskknmsl\n");
         return EMPTY;
     }
     unordered_map<Key,Value,Hasher32<Key> > toMap()
     {
             unordered_map<Key,Value,Hasher32<Key> > mmap;
-            for (int i=TABLE_NUM-1;i>=0;++i)
+            for (int i=TABLE_NUM-1;i>=0;--i)
             {
                 unordered_map<Key,Value,Hasher32<Key> >tmpmap=Ludo[i]->toMap();
                 auto it=tmpmap.begin();
@@ -57,9 +63,11 @@ class MultiLudo : public Base<Key,Value>{
     }
     int Merge(unordered_map<Key,Value,Hasher32<Key> > migrate)
     {
+            fprintf(stderr,"Start Merge!\n");
             Ludo[TABLE_NUM]=new SingleLudo(migrate,PreFixName+"_"+to_string(TABLE_NUM));
             TABLE_NUM++;
             if (TABLE_NUM==MAX_TABLE_SIZE) return FULL;
+            fprintf(stderr,"Merge Finished!\n");
             return OK;
     }
 };

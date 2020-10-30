@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include "Base.h"
 #include "common.h"
 #include "Ludo/minimal_perfect_cuckoo.h"
@@ -42,17 +43,24 @@ class SingleLudo : public Base<Key,Value>{
     int lookup(const Key &k,Value &out)
     {
             if (filter_use==true&&MyFilter->Contain(k)) return EMPTY;
+    //        if (filter_use==true&&MyFilter->Contain(k)==0) fprintf(stderr,"Find it in my bucket\n");
             int fd=open(FileName.c_str(),O_RDONLY);
             if (fd==-1) 
             {
                 Counter::count("SingleLudo lookup fail to open files");
                 return ERROR;
             }
-            if (Ludo->lookup(k,out,Indicator,fd)==true) return OK;
+            if (Ludo->lookup(k,out,Indicator,fd)==true) 
+            {
+                    close(fd);
+                    return OK;
+            }
+            close(fd);
             return EMPTY;
     }
     void Clear(const unordered_map<Key,Value,Hasher32<Key> > &migrate)
     {
+            //fprintf(stderr,"%d\n",migrate.size());
             auto iter=migrate.begin();
             ControlPlaneMinimalPerfectCuckoo<Key,Value> tmpludo(migrate.size());
             MySize=tmpludo.getBucketSize();
@@ -64,6 +72,8 @@ class SingleLudo : public Base<Key,Value>{
                     ++iter;
             } 
             empty_table=false;
+//            fprintf(stderr,"%s\n",FileName.c_str());
+            fprintf(stderr,"%d\n",MySize);
             tmpludo.to_File(FileName,Indicator);
             Ludo=new DataPlaneMinimalPerfectCuckoo<Key,Value>(tmpludo);
     }
@@ -83,6 +93,7 @@ class SingleLudo : public Base<Key,Value>{
                     if (read(fd,&nowValue,sizeof(nowValue))!=sizeof(nowValue)) Counter::count("SingleLudo value error");
                     if (nowKey!=0&&mmap.find(nowKey)==mmap.end()) mmap.insert(make_pair(nowKey,nowValue));
                 }
+            close(fd);
             return mmap;
     }
     void send_to_map(unordered_map<Key,Value,Hasher32<Key> > &mmap)
@@ -98,8 +109,9 @@ class SingleLudo : public Base<Key,Value>{
                 {
                     if (read(fd,&nowKey,sizeof(nowKey))!=sizeof(nowKey)) Counter::count("SingleLudo key error"); 
                     if (read(fd,&nowValue,sizeof(nowValue))!=sizeof(nowValue)) Counter::count("SingleLudo value error");
-                    if (nowKey!=0) mmap.insert(make_pair(nowKey,nowValue));
+                    if (nowKey!=0&&mmap.find(nowKey)==mmap.end()) mmap.insert(make_pair(nowKey,nowValue));
                 }
+            close(fd);
     }
     int Merge(unordered_map<Key,Value,Hasher32<Key> > migrate)
     {

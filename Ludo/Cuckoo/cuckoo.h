@@ -187,10 +187,10 @@ public:
 //      printf("%d\n",buckets_[170].occupiedMask);
     for (int i = 0; i < kCandidateBuckets; ++i) {
       uint32_t bucket = fast_map_to_buckets(h[i](k));
-      if (FindInBucket(k, bucket, out)) return true;
+      if (FindInBucket(k, bucket, out)) return OK;
     }
     
-    return false;
+    return EMPTY;
   }
   
   inline int modify(const Key &k, const Value& v) {
@@ -426,7 +426,6 @@ public:
   
   /// @return cuckoo path if rememberPath is true. or {1} to indicate success and {} to indicate fail.
   bool CuckooInsert(const Key &k, const Value &v) {
-    fprintf(stderr,"Cuckoo Insert!\n");
     int visited_end = -1;
     cpq_.reset();
     

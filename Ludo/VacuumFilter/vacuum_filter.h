@@ -157,11 +157,12 @@ namespace cuckoofilter {
       
       //std::cout << "num_buckets = " << num_buckets << std::endl;
       //std::cout << "big_segment_length = " << big_seg << std::endl;
+      /*
       std::cout << "alt range setting : ";
       for (int i = 0; i < AR; i++)
         std::cout << len[i] + 1 << ", ";
       std::cout << std::endl;
-      
+      */
       table_ = new TableType<bits_per_item>(num_buckets);
     }
     
