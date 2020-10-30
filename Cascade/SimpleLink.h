@@ -8,22 +8,22 @@
 #include "../common.h"
 
 #define MAX_HASH_LINK_SIZE 1024 
+#define LogBufferSize 4096
 
 
-template<class Key,class Value,uint32_t JumpLength = 1>
-class SimpleLink:public Base{
+template<class Key,class Value>
+class SimpleLink : public Base<Key,Value>{
     public:
     Hasher32<Key> h;
     struct Mapping{
         Key k;
-        uint32_t LogPos,NextLinks;
+        uint32_t LogPos,NextLink;
     };
     uint32_t Head[MAX_HASH_LINK_SIZE];
     int32_t Empty_Link;
     string FileName;
     vector<Mapping> Element;
     const uint32_t avgdown = BLOCK_SIZE_PER / MAX_HASH_LINK_SIZE;
-    const uint32_t LogBufferSize = (4096 / (sizeof(Key)+sizeof(Value))) * (sizeof(Key)+sizeof(Value));
     char LogBuff[LogBufferSize];
     char tmpBuff[LogBufferSize];
     bool *clockbit;
@@ -59,11 +59,11 @@ class SimpleLink:public Base{
             if (fd == -1)
             {
                 fd = open(FileName.c_str(),O_RDONLY);
-                pread(fd, p, length, offset);
+                pread(fd, tmp, length, offset);
                 close(fd);
             }
             else
-                pread(fd, p, length, offset);
+                pread(fd, tmp, length, offset);
             return tmp;
         }
     }
@@ -88,7 +88,7 @@ class SimpleLink:public Base{
     {
         uint32_t log_offset = log_insert(k,v);
         uint32_t Cur_ID = h(k) & (MAX_HASH_LINK_SIZE - 1);
-        Mapping &tmp_bucket;
+        Mapping &tmp_bucket = NULL;
         for (uint32_t id = Head[Cur_ID]; id != -1; id = tmp_bucket->NextLink)
         {
             tmp_bucket = Element[id];
@@ -107,7 +107,7 @@ class SimpleLink:public Base{
         tmp_bucket.LogPos = log_offset;
         tmp_bucket.NextLink = Head[Cur_ID];
         Head[Cur_ID] = bucketid;
-        clock[id] = false;
+        clock[bucketid] = false;
         
         return OK;
     }
@@ -122,9 +122,7 @@ class SimpleLink:public Base{
     virtual int lookup(const Key &k,Value &out)
     {
         uint32_t Cur_ID = h(k) & (MAX_HASH_LINK_SIZE - 1);
-        Mapping &tmp_bucket;
-        uint32_t Cur_ID = h(k) & (MAX_HASH_LINK_SIZE - 1);
-        Mapping &tmp_bucket;
+        Mapping &tmp_bucket = NULL;
         for (uint32_t id = Head[Cur_ID]; id != -1; id = tmp_bucket->NextLink)
         {
             tmp_bucket = Element[id];
@@ -137,7 +135,6 @@ class SimpleLink:public Base{
         }
         return true;
     }
-    Value ReadSlot(int logoffset)
     int Merge(unordered_map<Key,Value,Hasher32<Key> > other)
     {
         return ERROR;
@@ -153,7 +150,7 @@ class SimpleLink:public Base{
             if (clockbit[id] == false) 
             {
                 --limit;
-                mmap.insert(mk(tmp_bucket.k,ReadSlot(tmp_bucket.LogPos+sizeof(Key),sizeof(Value),fd)));
+                mmap.insert(make_pair(tmp_bucket.k,ReadSlot(tmp_bucket.LogPos+sizeof(Key),sizeof(Value),fd)));
                 if (lastid != -1)
                 Element[lastid].NextLink = tmp_bucket.NextLink;
                 else Head[Cur_ID] = tmp_bucket.Nextlink;
@@ -166,7 +163,7 @@ class SimpleLink:public Base{
         {
             tmp_bucket = Element[id];
             --limit;
-            mmap.insert(mk(tmp_bucket.k,ReadSlot(tmp_bucket.LogPos+sizeof(Key),sizeof(Value))));
+            mmap.insert(make_pair(tmp_bucket.k,ReadSlot(tmp_bucket.LogPos+sizeof(Key),sizeof(Value))));
             Head[Cur_ID] = tmp_bucket.Nextlink;
             tmp_bucket.NextLink = Empty_Link;
             Empty_Link = id;
