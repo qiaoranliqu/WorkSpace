@@ -5,11 +5,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "MultiLudo.h"
 #include "../common.h"
 #include "common.h"
-#include "Cuckoo/cuckoo.h"
-#include "SingleLudo.h"
+#include "SimpleLink.h"
 
 #define MAX_TABLE_NUM 5
 #define MAX_BUFF_SIZE 4096
@@ -26,65 +24,18 @@ class MyDesign{
 	const string LogFile="MyDesign.log";
 	char LogBuff[MAX_BUFF_SIZE];
 	char TempBuff[MAX_BUFF_SIZE];
-	explicit MyDesign(/*uint32_t _TABLE_NUM,vector<Config> configure*/)
+	explicit MyDesign()
 	{
-		/*
-		    **TODO:Make configuration flexible
-			TABLE_NUM=_TABLE_NUM;
-			if (_TABLE_NUM>MAX_TABLE_NUM) 
-			{
-				fprintf(stderr,"TABLE_NUM_IS_TOO_BIG\n");
-			}
-			for (int i=0;i<_TABLE_NUM;++i)
-				table[i]=BuildByConfig(configure[i]);
-		*/	
-		table[0]=new CuckooMap<Key,Value>(DEFAULT_SIZE);
-		table[1]=new MultiLudo<Key,Value>("SecondLayer");
-		table[2]=new SingleLudo<Key,Value>("ThirdLayer");
+		table[0]=new SimpleLink<Key,Value>(DEFAULT_SIZE,LogFile);
+		table[1]=new BlockArray<Key,Value>("SecondLayer");
+		table[2]=new ComplexLink<Key,Value>("ThirdLayer");
 		fd=open(LogFile.c_str(),O_RDWR | O_CREAT | O_TRUNC,0777);
 //		fsync(fd);
 		close(fd);
 //		table[2]=new SingleLudo();
 	}
-	int LogBufferOffset=0,logFileOffset=0;
-	void appendLog(char* k,int klen)
-	{
-//		fprintf(stderr,"%d %c\n",klen,k[0]);
-		int kOffset=0;
-//		fprintf(stderr,"%d\n",fd);
-//		exit(0);
-		while (LogBufferOffset+(klen-kOffset)>=4096)
-		{
-			int fd = open(LogFile.c_str(),O_RDWR | O_APPEND);
-			int toWrite=4096-LogBufferOffset;
-			memcpy(LogBuff+LogBufferOffset,k+kOffset,toWrite);
-			LogBufferOffset=0;
-			kOffset+=toWrite;
-			pwrite(fd,LogBuff,4096,logFileOffset);
-			logFileOffset+=4096;
-		}
-		if (logFileOffset > logFileSize)
-		{
-			 Counter::count("Design fail logFile is too large");
-			 return;
-		}
-		int toWrite=klen-kOffset;
-		memcpy(LogBuff+LogBufferOffset,k+kOffset,toWrite);
-		LogBufferOffset+=toWrite;
-		close(fd);
-	}
-	void Insert_Log(string Cur_Type,const Key &Cur_Key,const Value &Cur_Value)
-	{
-		int tmplength=0;
-		strncpy(TempBuff,Cur_Type.c_str(),Cur_Type.length()); tmplength+=Cur_Type.length();
-		strncpy(TempBuff+tmplength,(char*)&Cur_Key,sizeof(Key)); tmplength+=sizeof(Key);
-		strncpy(TempBuff+tmplength,(char*)&Cur_Value,sizeof(Value)); tmplength+=sizeof(Value);
-		appendLog(TempBuff,tmplength);
-	}
 	uint32_t insert(const Key& Cur_Key,const Value& Cur_Val)
 	{
-//		fprintf(stderr,"insertlog\n");
-		Insert_Log("i",Cur_Key,Cur_Val);
 		STATUS=table[0]->insert(Cur_Key,Cur_Val);
 		if (STATUS==OK) return OK;
 		int Cur_Table=1;
@@ -110,7 +61,6 @@ class MyDesign{
 	}
 	uint32_t erase(Key& Cur_Key)
 	{
-		Insert_Log("e",Cur_Key,0);
 		STATUS=table[0]->erase(Cur_Key);
 		if (STATUS==OK) return OK;
 		int Cur_Table=1;
@@ -136,7 +86,6 @@ class MyDesign{
 	}
 	uint32_t modify(const Key& Cur_Key,const Value& Cur_Val)
 	{
-		Insert_Log("m",Cur_Key,Cur_Val);
 		STATUS=table[0]->modify(Cur_Key,Cur_Val);
 		if (STATUS==OK) return OK;
 		int Cur_Table=1;
@@ -163,7 +112,6 @@ class MyDesign{
 	Value lookup(const Key& Cur_Key)
 	{
 //		fprintf(stderr,"lookuplog\n");
-		Insert_Log("l",Cur_Key,0);
 		int i;
 		Value Cur_Value;
 		for (i=0;i<TABLE_NUM;++i)
