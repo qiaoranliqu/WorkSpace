@@ -32,11 +32,11 @@ class SimpleLink : public Base<Key,Value>{
     {
         memcpy( LogBuff+LogBufferOffset, tmpBuff, appendlen);
         LogBufferOffset += appendlen;
-        if (LogBufferSize == LogBufferSize) 
+        if (LogBufferOffset == LogBufferSize) 
         {
             int fd = open(FileName.c_str(),O_RDWR);
             pwrite(fd,LogBuff,LogBufferSize,logFileOffset);
-            LogBufferSize = 0;
+            LogBufferOffset = 0;
             logFileOffset += LogBufferSize;
             close(fd);
         }
@@ -74,7 +74,7 @@ class SimpleLink : public Base<Key,Value>{
         Element.resize(MaxSize);
         clockbit = new bool[MaxSize];
         for (uint32_t id = 0; id < MaxSize; ++id)
-            Element[id].NextLink = ( id + 1 == MaxSize ) ? id + 1 ? -1,
+            Element[id].NextLink = ( id + 1 == MaxSize ) ? id + 1 : -1,
             clockbit[id] = false;
         for (uint32_t id = 0; id < MAX_HASH_LINK_SIZE; ++id) 
             Head[id] = -1;
@@ -88,8 +88,8 @@ class SimpleLink : public Base<Key,Value>{
     {
         uint32_t log_offset = log_insert(k,v);
         uint32_t Cur_ID = h(k) & (MAX_HASH_LINK_SIZE - 1);
-        Mapping &tmp_bucket = NULL;
-        for (uint32_t id = Head[Cur_ID]; id != -1; id = tmp_bucket->NextLink)
+        Mapping &tmp_bucket = Head[Cur_ID];
+        for (uint32_t id = Head[Cur_ID]; id != -1; id = tmp_bucket.NextLink)
         {
             tmp_bucket = Element[id];
             if (tmp_bucket.k == k) 
@@ -102,7 +102,7 @@ class SimpleLink : public Base<Key,Value>{
         if (Empty_Link == -1) return FULL;
         uint32_t bucketid = Empty_Link;
         tmp_bucket = Element[Empty_Link];
-        Empty_Link = tmp_bucket->NextLink;
+        Empty_Link = tmp_bucket.NextLink;
         tmp_bucket.k = k;
         tmp_bucket.LogPos = log_offset;
         tmp_bucket.NextLink = Head[Cur_ID];
@@ -122,8 +122,8 @@ class SimpleLink : public Base<Key,Value>{
     virtual int lookup(const Key &k,Value &out)
     {
         uint32_t Cur_ID = h(k) & (MAX_HASH_LINK_SIZE - 1);
-        Mapping &tmp_bucket = NULL;
-        for (uint32_t id = Head[Cur_ID]; id != -1; id = tmp_bucket->NextLink)
+        Mapping &tmp_bucket = Head[Cur_ID];
+        for (uint32_t id = Head[Cur_ID]; id != -1; id = tmp_bucket.NextLink)
         {
             tmp_bucket = Element[id];
             if (tmp_bucket.k == k) 
@@ -141,7 +141,7 @@ class SimpleLink : public Base<Key,Value>{
     }
     uint32_t LinkClear(uint32_t Cur_ID, uint32_t limit, unordered_map<Key,Value,Hasher32<Key> > &mmap,int fd)
     {
-        Mapping &tmp_bucket;
+        Mapping &tmp_bucket = Head[Cur_ID];
         uint32_t lastid = -1,NextLink = -1;
         for (uint32_t id = Head[Cur_ID]; id != -1 && limit; id = NextLink)
         {
@@ -153,7 +153,7 @@ class SimpleLink : public Base<Key,Value>{
                 mmap.insert(make_pair(tmp_bucket.k,ReadSlot(tmp_bucket.LogPos+sizeof(Key),sizeof(Value),fd)));
                 if (lastid != -1)
                 Element[lastid].NextLink = tmp_bucket.NextLink;
-                else Head[Cur_ID] = tmp_bucket.Nextlink;
+                else Head[Cur_ID] = tmp_bucket.NextLink;
                 tmp_bucket.NextLink = Empty_Link;
                 Empty_Link = id;
             }
@@ -164,7 +164,7 @@ class SimpleLink : public Base<Key,Value>{
             tmp_bucket = Element[id];
             --limit;
             mmap.insert(make_pair(tmp_bucket.k,ReadSlot(tmp_bucket.LogPos+sizeof(Key),sizeof(Value))));
-            Head[Cur_ID] = tmp_bucket.Nextlink;
+            Head[Cur_ID] = tmp_bucket.NextLink;
             tmp_bucket.NextLink = Empty_Link;
             Empty_Link = id;
         }
