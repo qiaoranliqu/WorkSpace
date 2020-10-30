@@ -1,7 +1,5 @@
 #pragma once
 
-#define Hash
-
 #include "Base.h"
 #include "hash.h"
 #include "common.h"
