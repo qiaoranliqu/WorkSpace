@@ -50,18 +50,20 @@ class SimpleLink : public Base<Key,Value>{
     Value ReadSlot(uint32_t offset,int length,int fd = -1)
     {
         if (offset >= logFileOffset)
-            return *(Value&)(LogBuff + (offset - logFileOffset));
+            return *(Value*)(LogBuff + (offset - logFileOffset));
         else 
         {
             Value tmp;
+            char tmpBuff[sizeof(Value)];
             if (fd == -1)
             {
                 fd = open(FileName.c_str(),O_RDONLY);
-                pread(fd, tmp, length, offset);
+                pread(fd, tmpBuff, length, offset);
                 close(fd);
             }
             else
-                pread(fd, tmp, length, offset);
+                pread(fd, tmpBuff, length, offset);
+            tmp = *(Value*)(tmpBuff);
             return tmp;
         }
     }

@@ -83,4 +83,4 @@ class BlockArray : public Base<Key,Value>{
         ql = (ql + 1) & (BLOCK_SIZE - 1);   
         return mmap;     
     }
-}
+};
