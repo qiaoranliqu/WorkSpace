@@ -86,7 +86,7 @@ class SimpleLink : public Base<Key,Value>{
     {
         uint32_t log_offset = log_insert(k,v);
         uint32_t Cur_ID = h(k) & (MAX_HASH_LINK_SIZE - 1);
-        Mapping &tmp_bucket = Head[Cur_ID];
+        Mapping &tmp_bucket = Element[Head[Cur_ID]];
         for (uint32_t id = Head[Cur_ID]; id != -1; id = tmp_bucket.NextLink)
         {
             tmp_bucket = Element[id];
@@ -120,7 +120,7 @@ class SimpleLink : public Base<Key,Value>{
     virtual int lookup(const Key &k,Value &out)
     {
         uint32_t Cur_ID = h(k) & (MAX_HASH_LINK_SIZE - 1);
-        Mapping &tmp_bucket = Head[Cur_ID];
+        Mapping &tmp_bucket = Element[Head[Cur_ID]];
         for (uint32_t id = Head[Cur_ID]; id != -1; id = tmp_bucket.NextLink)
         {
             tmp_bucket = Element[id];
@@ -139,7 +139,7 @@ class SimpleLink : public Base<Key,Value>{
     }
     uint32_t LinkClear(uint32_t Cur_ID, uint32_t limit, unordered_map<Key,Value,Hasher32<Key> > &mmap,int fd)
     {
-        Mapping &tmp_bucket = Head[Cur_ID];
+        Mapping &tmp_bucket = Element[Head[Cur_ID]];
         uint32_t lastid = -1,NextLink = -1;
         for (uint32_t id = Head[Cur_ID]; id != -1 && limit; id = NextLink)
         {
